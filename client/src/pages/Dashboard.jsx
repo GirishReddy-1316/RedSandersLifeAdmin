@@ -32,8 +32,39 @@ const Dashboard = () => {
   return (
     <div className='dashboard-main'>
       <h1>Dashboard</h1>
-      <p>Hi { data.msg }! { data.luckyNumber }</p>
-      <Link to="/logout" className="logout-button">Logout</Link>
+      <p>Hi Admin{ data.msg }</p>
+      {/* <Link to="/logout" className="logout-button">Logout</Link> */}
+
+      <div className="home-container">
+      <div className="card">
+        <h2>Users List</h2>
+        <p>You can see list of JiYaBa Users here</p>
+        <Link to="/users">
+          <button>Go to Users</button>
+        </Link>
+      </div>
+      <div className="card">
+        <h2>Orders List</h2>
+        <p>You can see list of JiYaBa Orders here</p>
+        <Link to="/orders">
+          <button>Go to Orders</button>
+        </Link>
+      </div>
+      <div className="card">
+        <h2>Inventory list</h2>
+        <p>You can see list of JiYaBa Products here</p>
+        <Link to="/page3">
+          <button>Go to Products</button>
+        </Link>
+      </div>
+      <div className="card">
+        <h2>Create New Admin</h2>
+        <p>You can create new Admin</p>
+        <Link to="/page4">
+          <button>Create Admin</button>
+        </Link>
+      </div>
+    </div>
     </div>
   )
 }

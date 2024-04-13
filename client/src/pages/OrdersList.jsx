@@ -22,48 +22,62 @@ import {
   randomArrayItem,
 } from '@mui/x-data-grid-generator';
 
-const roles = ['Market', 'Finance', 'Development'];
-const randomRole = () => {
-  return randomArrayItem(roles);
+const orderStatus = ['Ordered', 'Shipped', 'Out for Delivery', 'Delivered'];
+const randomStatus = () => {
+  return randomArrayItem(orderStatus);
 };
 
 const initialRows = [
   {
-    id: 1234,
-    name: 'Giri',
-    email: 'giri2reddy2000@gmail.com',
-    registrationDate: randomCreatedDate(),
+    id: 'JYB12456778',
+    customerName: 'Sumadhur',
+    orderedOn: randomCreatedDate(),
+    phoneNumber: 8790555616,
+    emailId: 'giri2reddy2000@gmail.com',
+    billingAddress: '#50,Mallaiahpalli, Chandragiri',
+    pin: 517101,
+    listOfItemsPurchased: '2 - Jiya bottles, 4 - Red Soft drink',
+    quantity: 5,
+    totalAmount: 450,
+    orderStatus: randomStatus()
   },
   {
-    id: 5678,
-    name: 'Girish',
-    email: 'giri2reddy3000@gmail.com',
-    registrationDate: randomCreatedDate(),
+    id: 'JYB1235678',
+    customerName: 'Naresh',
+    orderedOn:  randomCreatedDate(),
+    phoneNumber: 9591834456,
+    emailId:'giri2reddy3000@gmail.com',
+    billingAddress: '#50,Dornakambala, Tirupati',
+    pin: 517101,
+    listOfItemsPurchased: '2 - Jiya bottles, 4 - Red Soft drink',
+    quantity: 5,
+    totalAmount: 650,
+    orderStatus: randomStatus()
   }
 ];
 
-function EditToolbar(props) {
-  const { setRows, setRowModesModel } = props;
+// function EditToolbar(props) {
+  // const { setRows, setRowModesModel } = props;
 
-  const handleClick = () => {
-    const id = randomId();
-    setRows((oldRows) => [...oldRows, { id, name: '', age: '', isNew: true }]);
-    setRowModesModel((oldModel) => ({
-      ...oldModel,
-      [id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' },
-    }));
-  };
+  // const handleClick = () => {
+  //   const id = randomId();
+  //   setRows((oldRows) => [...oldRows, { id, name: '', age: '', isNew: true }]);
+  //   setRowModesModel((oldModel) => ({
+  //     ...oldModel,
+  //     [id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' },
+  //   }));
+  // };
 
-  return (
-    <GridToolbarContainer>
-      <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-        Add user
-      </Button>
-    </GridToolbarContainer>
-  );
-}
+  // return (
+  //   <GridToolbarContainer>
+  //     <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
+  //       Add user
+  //     </Button>
+  //   </GridToolbarContainer>
+  // );
+// }
 
-export default function UsersList() {
+export default function OrdersList() {
   const [rows, setRows] = React.useState(initialRows);
   const [rowModesModel, setRowModesModel] = React.useState({});
 
@@ -108,23 +122,90 @@ export default function UsersList() {
   };
 
   const columns = [
-    { field: 'name', headerName: 'User Name', width: 180, editable: false },
+    { field: 'id', headerName: 'Order Id', width: 150, editable: false },
+    { field: 'customerName', headerName: 'Customer Name', width: 150, editable: false },
     {
-      field: 'email',
-      headerName: 'Email',
-      type: 'string',
+      field: 'orderedOn',
+      headerName: 'Ordered on',
+      type: 'date',
       width: 180,
       align: 'left',
       headerAlign: 'left',
       editable: false,
     },
     {
-      field: 'registrationDate',
-      headerName: 'Registration Date',
-      type: 'date',
+      field: 'phoneNumber',
+      headerName: 'Phone Number',
+      type: 'number',
       width: 180,
       editable: true,
-    },    
+      align: 'left',
+      headerAlign: 'left',
+    },  
+    {
+      field: 'emailId',
+      headerName: 'Email Id',
+      type: 'email',
+      width: 180,
+      editable: true,
+      align: 'left',
+      headerAlign: 'left',
+    }, 
+    {
+      field: 'billingAddress',
+      headerName: 'Billing Address',
+      type: 'number',
+      width: 180,
+      editable: true,
+      align: 'left',
+      headerAlign: 'left',
+    }, 
+    {
+      field: 'pin',
+      headerName: 'Pin Code',
+      type: 'number',
+      width: 180,
+      editable: true,
+      align: 'left',
+      headerAlign: 'left',
+    },   
+    {
+      field: 'listOfItemsPurchased',
+      headerName: 'Items Purchased',
+      type: 'sting',
+      width: 180,
+      editable: true,
+      align: 'left',
+      headerAlign: 'left',
+    }, 
+    {
+      field: 'quantity',
+      headerName: 'Quantity',
+      type: 'number',
+      width: 180,
+      editable: true,
+      align: 'left',
+      headerAlign: 'left',
+    }, 
+    {
+      field: 'totalAmount',
+      headerName: 'Total Amount',
+      type: 'number',
+      width: 180,
+      editable: true,
+      align: 'left',
+      headerAlign: 'left',
+    }, 
+    {
+      field: 'orderStatus',
+      headerName: 'Order Status',
+      width: 220,
+      editable: true,
+      type: 'singleSelect',
+      valueOptions: ['Ordered', 'Shipped', 'Out for Delivery', 'Delivered'],
+      align: 'left',
+      headerAlign: 'left',
+    }, 
     {
       field: 'actions',
       type: 'actions',
@@ -175,7 +256,7 @@ export default function UsersList() {
 
   return (
      <div>
-       <h1>Customers List</h1>
+       <h1>Orders List</h1>
        <Link to="/dashboard">
           <button>Go to Dashboard</button>
         </Link>
@@ -198,10 +279,7 @@ export default function UsersList() {
             rowModesModel={rowModesModel}
             onRowModesModelChange={handleRowModesModelChange}
             onRowEditStop={handleRowEditStop}
-            processRowUpdate={processRowUpdate}
-            slots={{
-              toolbar: EditToolbar,
-            }}
+            processRowUpdate={processRowUpdate}            
             slotProps={{
               toolbar: { setRows, setRowModesModel },
             }}
