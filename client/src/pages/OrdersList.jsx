@@ -30,7 +30,7 @@ const randomStatus = () => {
 const initialRows = [
   {
     id: 'JYB12456778',
-    customerName: 'Sumadhur',
+    customerName: 'Suresh',
     orderedOn: randomCreatedDate(),
     phoneNumber: 8790555616,
     emailId: 'giri2reddy2000@gmail.com',
