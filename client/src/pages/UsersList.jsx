@@ -1,11 +1,11 @@
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/DeleteOutlined';
-import SaveIcon from '@mui/icons-material/Save';
-import CancelIcon from '@mui/icons-material/Close';
+import * as React from "react";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/DeleteOutlined";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Close";
 import { Link } from "react-router-dom";
 
 import {
@@ -14,15 +14,15 @@ import {
   GridToolbarContainer,
   GridActionsCellItem,
   GridRowEditStopReasons,
-} from '@mui/x-data-grid';
+} from "@mui/x-data-grid";
 import {
   randomCreatedDate,
   randomTraderName,
   randomId,
   randomArrayItem,
-} from '@mui/x-data-grid-generator';
+} from "@mui/x-data-grid-generator";
 
-const roles = ['Market', 'Finance', 'Development'];
+const roles = ["Market", "Finance", "Development"];
 const randomRole = () => {
   return randomArrayItem(roles);
 };
@@ -30,16 +30,16 @@ const randomRole = () => {
 const initialRows = [
   {
     id: 1234,
-    name: 'Giri',
-    email: 'giri2reddy2000@gmail.com',
+    name: "Giri",
+    email: "giri2reddy2000@gmail.com",
     registrationDate: randomCreatedDate(),
   },
   {
     id: 5678,
-    name: 'Girish',
-    email: 'giri2reddy3000@gmail.com',
+    name: "Hari",
+    email: "giri2reddy3000@gmail.com",
     registrationDate: randomCreatedDate(),
-  }
+  },
 ];
 
 function EditToolbar(props) {
@@ -47,10 +47,10 @@ function EditToolbar(props) {
 
   const handleClick = () => {
     const id = randomId();
-    setRows((oldRows) => [...oldRows, { id, name: '', age: '', isNew: true }]);
+    setRows((oldRows) => [...oldRows, { id, name: "", age: "", isNew: true }]);
     setRowModesModel((oldModel) => ({
       ...oldModel,
-      [id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' },
+      [id]: { mode: GridRowModes.Edit, fieldToFocus: "name" },
     }));
   };
 
@@ -96,6 +96,21 @@ export default function UsersList() {
       setRows(rows.filter((row) => row.id !== id));
     }
   };
+  
+  const handleSearch = (event) => {
+    const keyword = event.target.value.toLowerCase();
+    if (keyword.trim() === "") {
+      setRows(initialRows); // Reset rows to their original state
+    } else {
+      const filteredRows = rows.filter(
+        (row) =>
+          row.name.toLowerCase().includes(keyword) ||
+          row.email.toString().includes(keyword)
+      );
+      setRows(filteredRows);
+    }
+  };
+  
 
   const processRowUpdate = (newRow) => {
     const updatedRow = { ...newRow, isNew: false };
@@ -108,29 +123,29 @@ export default function UsersList() {
   };
 
   const columns = [
-    { field: 'name', headerName: 'User Name', width: 180, editable: false },
+    { field: "name", headerName: "User Name", width: 180, editable: false },
     {
-      field: 'email',
-      headerName: 'Email',
-      type: 'string',
+      field: "email",
+      headerName: "Email",
+      type: "string",
       width: 180,
-      align: 'left',
-      headerAlign: 'left',
+      align: "left",
+      headerAlign: "left",
       editable: false,
     },
     {
-      field: 'registrationDate',
-      headerName: 'Registration Date',
-      type: 'date',
+      field: "registrationDate",
+      headerName: "Registration Date",
+      type: "date",
       width: 180,
       editable: true,
-    },    
+    },
     {
-      field: 'actions',
-      type: 'actions',
-      headerName: 'Actions',
+      field: "actions",
+      type: "actions",
+      headerName: "Actions",
       width: 100,
-      cellClassName: 'actions',
+      cellClassName: "actions",
       getActions: ({ id }) => {
         const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
 
@@ -140,7 +155,7 @@ export default function UsersList() {
               icon={<SaveIcon />}
               label="Save"
               sx={{
-                color: 'primary.main',
+                color: "primary.main",
               }}
               onClick={handleSaveClick(id)}
             />,
@@ -174,39 +189,43 @@ export default function UsersList() {
   ];
 
   return (
-     <div>
-       <h1>Customers List</h1>
-       <Link to="/dashboard">
-          <button>Go to Dashboard</button>
-        </Link>
-        <Box
-          sx={{
-            height: 500,
-            width: '100%',
-            '& .actions': {
-              color: 'text.secondary',
-            },
-            '& .textPrimary': {
-              color: 'text.primary',
-            },
+    <div>
+      <h1>Customers List</h1>
+      <Link to="/dashboard">
+        <button>Go to Dashboard</button>
+      </Link>
+      <Box
+        sx={{
+          height: 500,
+          width: "100%",
+          "& .actions": {
+            color: "text.secondary",
+          },
+          "& .textPrimary": {
+            color: "text.primary",
+          },
+        }}
+      >
+        <input type="text" style={{
+          height: '35px',
+          margin: '5px 0',       
+        }} placeholder="Search..." onChange={handleSearch} />
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          editMode="row"
+          rowModesModel={rowModesModel}
+          onRowModesModelChange={handleRowModesModelChange}
+          onRowEditStop={handleRowEditStop}
+          processRowUpdate={processRowUpdate}
+          slots={{
+            toolbar: EditToolbar,
           }}
-        >
-          <DataGrid
-            rows={rows}
-            columns={columns}
-            editMode="row"
-            rowModesModel={rowModesModel}
-            onRowModesModelChange={handleRowModesModelChange}
-            onRowEditStop={handleRowEditStop}
-            processRowUpdate={processRowUpdate}
-            slots={{
-              toolbar: EditToolbar,
-            }}
-            slotProps={{
-              toolbar: { setRows, setRowModesModel },
-            }}
-          />
-        </Box>
+          slotProps={{
+            toolbar: { setRows, setRowModesModel },
+          }}
+        />
+      </Box>
     </div>
   );
 }
