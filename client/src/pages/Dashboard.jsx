@@ -51,9 +51,9 @@ const Dashboard = () => {
         </Link>
       </div>
       <div className="card">
-        <h2>Inventory list</h2>
+        <h2>Products list</h2>
         <p>You can see list of JiYaBa Products here</p>
-        <Link to="/page3">
+        <Link to="/products">
           <button>Go to Products</button>
         </Link>
       </div>
