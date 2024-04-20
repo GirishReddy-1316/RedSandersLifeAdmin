@@ -29,16 +29,30 @@ const randomRole = () => {
 
 const initialRows = [
   {
-    id: 1234,
-    name: "Giri",
-    email: "giri2reddy2000@gmail.com",
-    registrationDate: randomCreatedDate(),
+    id: 182893933,
+    productId: "Giri1234",
+    brandName: "jiyaba",
+    image: 'imageURl',
+    productName: 'Red Refresh',
+    price:'₹100',
+    category:'water',
+    size:'2000',
+    featured:'true',
+    slug:'red-refresh',
+    description:'Red refresh is a cooldrink and it mix up of Red sanders water + Corbonated water + Stevia + Monk fruit extract + Detox water ',
   },
   {
-    id: 5678,
-    name: "Hari",
-    email: "giri2reddy3000@gmail.com",
-    registrationDate: randomCreatedDate(),
+    id: 129390303,
+    productId: "Hari32145",
+    brandName: "jiyaba",
+    image: 'imageURl2',
+    productName: 'RedJiya',
+    price:'Cost of product2',
+    category:'category2',
+    size:'size2',
+    featured:'featured flag2',
+    slug:'product url2',
+    description:'product description2',
   },
 ];
 
@@ -57,7 +71,7 @@ function EditToolbar(props) {
   return (
     <GridToolbarContainer>
       <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-        Add user
+        Add Product
       </Button>
     </GridToolbarContainer>
   );
@@ -104,8 +118,8 @@ export default function ProductsList() {
     } else {
       const filteredRows = rows.filter(
         (row) =>
-          row.name.toLowerCase().includes(keyword) ||
-          row.email.toString().includes(keyword)
+          row.productId.toLowerCase().includes(keyword) ||
+          row.productName.toString().includes(keyword)
       );
       setRows(filteredRows);
     }
@@ -123,21 +137,87 @@ export default function ProductsList() {
   };
 
   const columns = [
-    { field: "name", headerName: "User Name", width: 180, editable: false },
+    { field: "productId", headerName: "Product Id",type: "number", width: 180, align: "left",
+    headerAlign: "left", editable: true },
     {
-      field: "email",
-      headerName: "Email",
+      field: "brandName",
+      headerName: "Brand Name",
       type: "string",
       width: 180,
       align: "left",
       headerAlign: "left",
-      editable: false,
+      editable: true,
     },
     {
-      field: "registrationDate",
-      headerName: "Registration Date",
-      type: "date",
+      field: "image",
+      headerName: "Image Name",
+      type: "string",
       width: 180,
+      align: "left",
+      headerAlign: "left",
+      editable: true,
+    },
+    {
+      field: "productName",
+      headerName: "Product Name",
+      type: "string",
+      width: 180,
+      align: "left",
+      headerAlign: "left",
+      editable: true,
+    },
+    {
+      field: "price",
+      headerName: "Price",
+      type: "string",
+      width: 180,
+      align: "left",
+      headerAlign: "left",
+      editable: true,
+    },
+    {
+      field: "category",
+      headerName: "Category",
+      type: "string",
+      width: 180,
+      align: "left",
+      headerAlign: "left",
+      editable: true,
+    },
+    {
+      field: "size",
+      headerName: "Size",
+      type: "string",
+      width: 180,
+      align: "left",
+      headerAlign: "left",
+      editable: true,
+    },
+    {
+      field: "featured",
+      headerName: "Featured Product",
+      type: "string",
+      width: 180,
+      align: "left",
+      headerAlign: "left",
+      editable: true,
+    },   
+    {
+      field: "slug",
+      headerName: "Product URL",
+      type: "string",
+      width: 180,
+      align: "left",
+      headerAlign: "left",
+      editable: true,
+    },
+    {
+      field: "description",
+      headerName: "Description",
+      type: "string",
+      width: 180,
+      align: "left",
+      headerAlign: "left",
       editable: true,
     },
     {
