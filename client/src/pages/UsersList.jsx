@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import AddIcon from "@mui/icons-material/Add";
@@ -7,6 +7,7 @@ import DeleteIcon from "@mui/icons-material/DeleteOutlined";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Close";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 
 import {
   GridRowModes,
@@ -21,26 +22,7 @@ import {
   randomId,
   randomArrayItem,
 } from "@mui/x-data-grid-generator";
-
-const roles = ["Market", "Finance", "Development"];
-const randomRole = () => {
-  return randomArrayItem(roles);
-};
-
-const initialRows = [
-  {
-    id: 1234,
-    name: "Giri",
-    email: "giri2reddy2000@gmail.com",
-    registrationDate: randomCreatedDate(),
-  },
-  {
-    id: 5678,
-    name: "Hari",
-    email: "giri2reddy3000@gmail.com",
-    registrationDate: randomCreatedDate(),
-  },
-];
+import { axiosInstance } from "../api";
 
 function EditToolbar(props) {
   const { setRows, setRowModesModel } = props;
@@ -52,6 +34,7 @@ function EditToolbar(props) {
       ...oldModel,
       [id]: { mode: GridRowModes.Edit, fieldToFocus: "name" },
     }));
+    toast.success("User added for editing");
   };
 
   return (
@@ -64,8 +47,43 @@ function EditToolbar(props) {
 }
 
 export default function UsersList() {
-  const [rows, setRows] = React.useState(initialRows);
-  const [rowModesModel, setRowModesModel] = React.useState({});
+  const [rows, setRows] = useState([]);
+  const [token, setToken] = useState(JSON.parse(localStorage.getItem("admin_token")) || "");
+  const [rowModesModel, setRowModesModel] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      toast.info("Loading users...");
+      try {
+        let axiosConfig = {
+          headers: {
+            'authorization': `Bearer ${token}`
+          }
+        };
+        const response = await axiosInstance.get("/admin/customer-list",
+          axiosConfig
+        );
+        const usersWithIds = response.data.map((user) => ({
+          ...user,
+          id: user._id,
+          createdAt: new Date(user.createdAt),
+        }));
+        setRows(usersWithIds);
+        setLoading(false);
+        toast.success("Users loaded successfully");
+      } catch (error) {
+        setError(error.message);
+        setLoading(false);
+        toast.error("Error loading users: " + error.message);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const handleRowEditStop = (params, event) => {
     if (params.reason === GridRowEditStopReasons.rowFocusOut) {
@@ -73,16 +91,58 @@ export default function UsersList() {
     }
   };
 
-  const handleEditClick = (id) => () => {
+  const handleEditClick = (id) => async () => {
+    const row = rows.find(r => r.id === id);
     setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+    let axiosConfig = {
+      headers: {
+        'authorization': `Bearer ${token}`
+      }
+    };
+    console.log(row);
+    const response = await axiosInstance.put(`/admin/users/${id}`, {
+      username: row.username,
+      email: row.email,
+    }, axiosConfig);
+
+    toast.info(`Editing user with ID: ${id}`);
   };
 
-  const handleSaveClick = (id) => () => {
+  const handleSaveClick = (id) => async () => {
     setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+    const row = rows.find(r => r.id === id);
+    try {
+      let axiosConfig = {
+        headers: {
+          'authorization': `Bearer ${token}`
+        }
+      };
+      console.log(row);
+      const response = await axiosInstance.put(`/admin/users/${id}`, {
+        username: row.username,
+        email: row.email,
+      }, axiosConfig);
+
+      setRows(rows.map(r => (r.id === id ? { ...r, ...response.data } : r)));
+      toast.success("User saved successfully");
+    } catch (error) {
+      toast.error("Error saving user: " + error.message);
+    }
   };
 
-  const handleDeleteClick = (id) => () => {
-    setRows(rows.filter((row) => row.id !== id));
+  const handleDeleteClick = (id) => async () => {
+    try {
+      let axiosConfig = {
+        headers: {
+          'authorization': `Bearer ${token}`
+        }
+      };
+      const response = await axiosInstance.delete(`/admin/users/${id}`, axiosConfig);
+      setRows(rows.filter(row => row.id !== id));
+      toast.success("User deleted successfully");
+    } catch (error) {
+      toast.error("Error deleting user: " + error.message);
+    }
   };
 
   const handleCancelClick = (id) => () => {
@@ -90,27 +150,25 @@ export default function UsersList() {
       ...rowModesModel,
       [id]: { mode: GridRowModes.View, ignoreModifications: true },
     });
-
     const editedRow = rows.find((row) => row.id === id);
     if (editedRow.isNew) {
       setRows(rows.filter((row) => row.id !== id));
     }
   };
-  
+
   const handleSearch = (event) => {
     const keyword = event.target.value.toLowerCase();
     if (keyword.trim() === "") {
-      setRows(initialRows); // Reset rows to their original state
+      setRows(initialRows);
     } else {
       const filteredRows = rows.filter(
         (row) =>
           row.name.toLowerCase().includes(keyword) ||
-          row.email.toString().includes(keyword)
+          row.email.toLowerCase().includes(keyword)
       );
       setRows(filteredRows);
     }
   };
-  
 
   const processRowUpdate = (newRow) => {
     const updatedRow = { ...newRow, isNew: false };
@@ -123,7 +181,7 @@ export default function UsersList() {
   };
 
   const columns = [
-    { field: "name", headerName: "User Name", width: 180, editable: false },
+    { field: "username", headerName: "User Name", width: 180, editable: true },
     {
       field: "email",
       headerName: "Email",
@@ -131,10 +189,10 @@ export default function UsersList() {
       width: 180,
       align: "left",
       headerAlign: "left",
-      editable: false,
+      editable: true,
     },
     {
-      field: "registrationDate",
+      field: "createdAt",
       headerName: "Registration Date",
       type: "date",
       width: 180,
@@ -208,7 +266,7 @@ export default function UsersList() {
       >
         <input type="text" style={{
           height: '35px',
-          margin: '5px 0',       
+          margin: '5px 0',
         }} placeholder="Search..." onChange={handleSearch} />
         <DataGrid
           rows={rows}

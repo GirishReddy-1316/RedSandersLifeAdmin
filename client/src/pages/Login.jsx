@@ -8,10 +8,11 @@ import "../styles/Login.css";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { axiosInstance } from "../api";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [ token, setToken ] = useState(JSON.parse(localStorage.getItem("auth")) || "");
+  const [token, setToken] = useState(JSON.parse(localStorage.getItem("auth")) || "");
   const navigate = useNavigate();
 
 
@@ -27,11 +28,11 @@ const Login = () => {
         password,
       };
       try {
-        const response = await axios.post(
-          "http://localhost:3000/api/v1/login",
+        const response = await axiosInstance.post(
+          "admin/login",
           formData
         );
-        localStorage.setItem('auth', JSON.stringify(response.data.token));
+        localStorage.setItem('admin_token', JSON.stringify(response.data.token));
         toast.success("Login successfull");
         navigate("/dashboard");
       } catch (err) {
@@ -44,7 +45,7 @@ const Login = () => {
   };
 
   useEffect(() => {
-    if(token !== ""){
+    if (token !== "") {
       toast.success("You already logged in");
       navigate("/dashboard");
     }
