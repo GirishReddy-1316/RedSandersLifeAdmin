@@ -1,7 +1,5 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import SaveIcon from '@mui/icons-material/Save';
@@ -21,65 +19,16 @@ import {
   randomId,
   randomArrayItem,
 } from '@mui/x-data-grid-generator';
+import { toast } from 'react-toastify';
+import { useEffect } from 'react';
+import { axiosInstance } from '../api';
 
-const orderStatus = ['Ordered', 'Shipped', 'Out for Delivery', 'Delivered'];
-const randomStatus = () => {
-  return randomArrayItem(orderStatus);
-};
-
-const initialRows = [
-  {
-    id: 'JYB12456778',
-    customerName: 'Suresh',
-    orderedOn: randomCreatedDate(),
-    phoneNumber: 8790555616,
-    emailId: 'giri2reddy2000@gmail.com',
-    billingAddress: '#50,Mallaiahpalli, Chandragiri',
-    pin: 517101,
-    listOfItemsPurchased: '2 - Jiya bottles, 4 - Red Soft drink',
-    quantity: 5,
-    totalAmount: 450,
-    orderStatus: randomStatus()
-  },
-  {
-    id: 'JYB1235678',
-    customerName: 'Naresh',
-    orderedOn:  randomCreatedDate(),
-    phoneNumber: 9591834456,
-    emailId:'giri2reddy3000@gmail.com',
-    billingAddress: '#50,Dornakambala, Tirupati',
-    pin: 517101,
-    listOfItemsPurchased: '2 - Jiya bottles, 4 - Red Soft drink',
-    quantity: 5,
-    totalAmount: 650,
-    orderStatus: randomStatus()
-  }
-];
-
-// function EditToolbar(props) {
-  // const { setRows, setRowModesModel } = props;
-
-  // const handleClick = () => {
-  //   const id = randomId();
-  //   setRows((oldRows) => [...oldRows, { id, name: '', age: '', isNew: true }]);
-  //   setRowModesModel((oldModel) => ({
-  //     ...oldModel,
-  //     [id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' },
-  //   }));
-  // };
-
-  // return (
-  //   <GridToolbarContainer>
-  //     <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-  //       Add user
-  //     </Button>
-  //   </GridToolbarContainer>
-  // );
-// }
+const orderStatus = ['Placed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled']
 
 export default function OrdersList() {
-  const [rows, setRows] = React.useState(initialRows);
+  const [rows, setRows] = React.useState([]);
   const [rowModesModel, setRowModesModel] = React.useState({});
+  const [token, setToken] = React.useState(JSON.parse(localStorage.getItem("admin_token")) || "");
 
   const handleRowEditStop = (params, event) => {
     if (params.reason === GridRowEditStopReasons.rowFocusOut) {
@@ -87,16 +36,41 @@ export default function OrdersList() {
     }
   };
 
-  const handleEditClick = (id) => () => {
+  const handleEditClick = (id) => {
     setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+    const row = rows.find(r => r.id === id);
+    console.log(id, row)
   };
 
-  const handleSaveClick = (id) => () => {
+  const handleSaveClick = async (id) => {
+    const row = rows.find(r => r.id === id);
     setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+
+    try {
+      let axiosConfig = {
+        headers: {
+          'authorization': `Bearer ${token}`
+        }
+      };
+      console.log(row);
+      const response = await axiosInstance.post(`/order/update/${id}`, {
+        status: row.orderStatus,
+      }, axiosConfig);
+      setRows(rows.map(r => (r.id === id ? { ...r, ...response.data } : r)));
+    } catch (error) {
+      toast.error("Error saving user: " + error.message);
+    }
   };
 
-  const handleDeleteClick = (id) => () => {
+  const handleDeleteClick = async (id) => {
+    let axiosConfig = {
+      headers: {
+        'authorization': `Bearer ${token}`
+      }
+    };
+    const response = await axiosInstance.delete(`/order/delete/${id}`, axiosConfig);
     setRows(rows.filter((row) => row.id !== id));
+    toast.success("Order deleted successfully");
   };
 
   const handleCancelClick = (id) => () => {
@@ -141,7 +115,7 @@ export default function OrdersList() {
       editable: true,
       align: 'left',
       headerAlign: 'left',
-    },  
+    },
     {
       field: 'emailId',
       headerName: 'Email Id',
@@ -150,7 +124,7 @@ export default function OrdersList() {
       editable: true,
       align: 'left',
       headerAlign: 'left',
-    }, 
+    },
     {
       field: 'billingAddress',
       headerName: 'Billing Address',
@@ -159,7 +133,7 @@ export default function OrdersList() {
       editable: true,
       align: 'left',
       headerAlign: 'left',
-    }, 
+    },
     {
       field: 'pin',
       headerName: 'Pin Code',
@@ -168,7 +142,7 @@ export default function OrdersList() {
       editable: true,
       align: 'left',
       headerAlign: 'left',
-    },   
+    },
     {
       field: 'listOfItemsPurchased',
       headerName: 'Items Purchased',
@@ -177,7 +151,7 @@ export default function OrdersList() {
       editable: true,
       align: 'left',
       headerAlign: 'left',
-    }, 
+    },
     {
       field: 'quantity',
       headerName: 'Quantity',
@@ -186,7 +160,7 @@ export default function OrdersList() {
       editable: true,
       align: 'left',
       headerAlign: 'left',
-    }, 
+    },
     {
       field: 'totalAmount',
       headerName: 'Total Amount',
@@ -195,17 +169,17 @@ export default function OrdersList() {
       editable: true,
       align: 'left',
       headerAlign: 'left',
-    }, 
+    },
     {
       field: 'orderStatus',
       headerName: 'Order Status',
       width: 220,
       editable: true,
       type: 'singleSelect',
-      valueOptions: ['Ordered', 'Shipped', 'Out for Delivery', 'Delivered'],
+      valueOptions: ['Placed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'],
       align: 'left',
       headerAlign: 'left',
-    }, 
+    },
     {
       field: 'actions',
       type: 'actions',
@@ -223,13 +197,13 @@ export default function OrdersList() {
               sx={{
                 color: 'primary.main',
               }}
-              onClick={handleSaveClick(id)}
+              onClick={() => handleSaveClick(id)}
             />,
             <GridActionsCellItem
               icon={<CancelIcon />}
               label="Cancel"
               className="textPrimary"
-              onClick={handleCancelClick(id)}
+              onClick={() => handleCancelClick(id)}
               color="inherit"
             />,
           ];
@@ -240,13 +214,13 @@ export default function OrdersList() {
             icon={<EditIcon />}
             label="Edit"
             className="textPrimary"
-            onClick={handleEditClick(id)}
+            onClick={() => handleEditClick(id)}
             color="inherit"
           />,
           <GridActionsCellItem
             icon={<DeleteIcon />}
             label="Delete"
-            onClick={handleDeleteClick(id)}
+            onClick={() => handleDeleteClick(id)}
             color="inherit"
           />,
         ];
@@ -254,37 +228,73 @@ export default function OrdersList() {
     },
   ];
 
+  useEffect(() => {
+    const fetchUserOrders = async () => {
+      try {
+        const response = await axiosInstance.get(`/order/get-all`, {
+          headers: {
+            "authorization": `Bearer ${token}`
+          }
+        });
+        const formattedRows = response.data.map(order => ({
+          id: order._id,
+          customerName: order?.mergedCustomer?.username || "",
+          orderedOn: new Date(order.createdAt),
+          phoneNumber: order?.mergedCustomer?.phoneNumber || "",
+          emailId: order?.mergedCustomer?.email,
+          billingAddress: order.shippingAddress.street + ', ' + order.shippingAddress.city,
+          pin: order.shippingAddress.pin,
+          listOfItemsPurchased: order.products.map(product => `${product.quantity} - ${product.name}`).join(', '),
+          quantity: order.products.reduce((total, product) => total + product.quantity, 0),
+          totalAmount: order.totalPrice,
+          orderStatus: order.status,
+        }));
+
+        setRows(formattedRows);
+      } catch (error) {
+        console.log('Error fetching orders:', error);
+        toast.error(
+          error.response ? error.response.data.message : error.message,
+          { duration: 2000, position: "top-center" }
+        );
+      }
+    };
+
+    fetchUserOrders();
+
+  }, []);
+
   return (
-     <div>
-       <h1>Orders List</h1>
-       <Link to="/dashboard">
-          <button>Go to Dashboard</button>
-        </Link>
-        <Box
-          sx={{
-            height: 500,
-            width: '100%',
-            '& .actions': {
-              color: 'text.secondary',
-            },
-            '& .textPrimary': {
-              color: 'text.primary',
-            },
+    <div>
+      <h1>Orders List</h1>
+      <Link to="/dashboard">
+        <button>Go to Dashboard</button>
+      </Link>
+      <Box
+        sx={{
+          height: 500,
+          width: '100%',
+          '& .actions': {
+            color: 'text.secondary',
+          },
+          '& .textPrimary': {
+            color: 'text.primary',
+          },
+        }}
+      >
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          editMode="row"
+          rowModesModel={rowModesModel}
+          onRowModesModelChange={handleRowModesModelChange}
+          onRowEditStop={handleRowEditStop}
+          processRowUpdate={processRowUpdate}
+          slotProps={{
+            toolbar: { setRows, setRowModesModel },
           }}
-        >
-          <DataGrid
-            rows={rows}
-            columns={columns}
-            editMode="row"
-            rowModesModel={rowModesModel}
-            onRowModesModelChange={handleRowModesModelChange}
-            onRowEditStop={handleRowEditStop}
-            processRowUpdate={processRowUpdate}            
-            slotProps={{
-              toolbar: { setRows, setRowModesModel },
-            }}
-          />
-        </Box>
+        />
+      </Box>
     </div>
   );
 }

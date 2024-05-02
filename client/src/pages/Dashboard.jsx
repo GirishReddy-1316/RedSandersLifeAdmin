@@ -9,21 +9,8 @@ const Dashboard = () => {
   const [data, setData] = useState({});
   const navigate = useNavigate();
 
-  const fetchLuckyNumber = async () => {
-
-    let axiosConfig = {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    };
-
-
-  }
-
-
-
   // useEffect(() => {
-  //   if(token === ""){
+  //   if (token === "") {
   //     navigate("/login");
   //     toast.warn("Please login first to access dashboard");
   //   }

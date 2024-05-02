@@ -48,11 +48,11 @@ function EditToolbar(props) {
 
 export default function UsersList() {
   const [rows, setRows] = useState([]);
+  const [initialRows, setinitialRows] = useState([]); // Added for initially loaded rows reference
   const [token, setToken] = useState(JSON.parse(localStorage.getItem("admin_token")) || "");
   const [rowModesModel, setRowModesModel] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -73,6 +73,7 @@ export default function UsersList() {
           createdAt: new Date(user.createdAt),
         }));
         setRows(usersWithIds);
+        setinitialRows(usersWithIds);
         setLoading(false);
         toast.success("Users loaded successfully");
       } catch (error) {
@@ -157,13 +158,13 @@ export default function UsersList() {
   };
 
   const handleSearch = (event) => {
-    const keyword = event.target.value.toLowerCase();
+    const keyword = event.target.value ? event.target.value.toLowerCase() : '';
     if (keyword.trim() === "") {
       setRows(initialRows);
     } else {
       const filteredRows = rows.filter(
         (row) =>
-          row.name.toLowerCase().includes(keyword) ||
+          row.username.toLowerCase().includes(keyword) ||
           row.email.toLowerCase().includes(keyword)
       );
       setRows(filteredRows);

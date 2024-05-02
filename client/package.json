@@ -17,6 +17,7 @@
     "@mui/x-data-grid": "^6.19.10",
     "@mui/x-data-grid-generator": "^6.19.10",
     "axios": "^1.6.3",
+    "cloudinary-react": "^1.8.1",
     "cors": "^2.8.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
