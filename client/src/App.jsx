@@ -1,9 +1,10 @@
 
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import { Dashboard, HomeLayout, Landing, Login, Logout, Register, UsersList} from "./pages";
+import { Dashboard, HomeLayout, Landing, Login, Logout, Register, UsersList } from "./pages";
 import { ToastContainer, toast } from 'react-toastify';
 import OrdersList from "./pages/OrdersList";
 import ProductsList from "./pages/ProductsList";
+import AdminRegistrationPage from "./pages/adminRegistration";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -40,9 +41,13 @@ const router = createBrowserRouter([
       {
         path: "products",
         element: <ProductsList />,
+      },
+      {
+        path: "registratration",
+        element: <AdminRegistrationPage />,
       }
-      
-      
+
+
     ],
   },
 ]);
@@ -52,8 +57,8 @@ function App() {
 
   return (
     <>
-        <RouterProvider router={router} />
-        <ToastContainer position='top-center' />
+      <RouterProvider router={router} />
+      <ToastContainer position='top-center' />
     </>
   )
 }

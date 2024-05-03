@@ -25,9 +25,10 @@ import {
 } from "@mui/x-data-grid-generator";
 
 function EditToolbar(props) {
-  const { setRows, setRowModesModel, setImageUrl, imageUrl } = props;
+  const { setRows, setRowModesModel, setImageUrl, imageUrl, getproductList } = props;
   const [image, setImage] = React.useState(null);
   const [open, setOpen] = React.useState(false);
+  const [token, setToken] = React.useState(JSON.parse(localStorage.getItem("admin_token")) || "");
   const [formData, setFormData] = React.useState({
     brandName: "jiyaba",
     image: "",
@@ -75,9 +76,10 @@ function EditToolbar(props) {
       console.log(formDataToSend)
       const response = await axiosInstance.post(`/products/insert`, formDataToSend, {
         headers: {
-          "Content-Type": "multipart/form-data",
-        },
+          'authorization': `Bearer ${token}`
+        }
       });
+      await getproductList();
       toast.success("Product added successfully");
       setOpen(false);
     } catch (error) {
@@ -116,10 +118,6 @@ function EditToolbar(props) {
 
   return (
     <GridToolbarContainer>
-      <CloudinaryContext cloudName="ml_default">
-        <input type="file" onChange={handleFileChange} />
-
-      </CloudinaryContext>
       <Button color="primary" startIcon={<AddIcon />} onClick={handleOpen}>
         Add Product
       </Button>
@@ -200,7 +198,9 @@ function EditToolbar(props) {
             fullWidth
             margin="normal"
           />
-          <input type="file" onChange={handleFileChange} />
+          <CloudinaryContext cloudName="ml_default">
+            <input type="file" onChange={handleFileChange} />
+          </CloudinaryContext>
           <Button variant="contained" onClick={handleSubmit}>
             Add
           </Button>
@@ -213,6 +213,7 @@ function EditToolbar(props) {
 export default function ProductsList() {
   const [rows, setRows] = React.useState([]);
   const [rowModesModel, setRowModesModel] = React.useState({});
+  const [initialRows, setinitialRows] = React.useState([]);
   const [token, setToken] = React.useState(JSON.parse(localStorage.getItem("admin_token")) || "");
   const [imageUrl, setImageUrl] = React.useState(null);
 
@@ -238,14 +239,8 @@ export default function ProductsList() {
       };
 
       let response;
-      if (editedRow.isNew) {
-        response = await axiosInstance.post(`/products/insert`, editedRow, axiosConfig);
-      } else {
-        response = await axiosInstance.put(`/products/update/${id}`, editedRow, axiosConfig);
-      }
-
+      response = await axiosInstance.post(`/products/update/${id}`, editedRow, axiosConfig);
       const updatedRowData = response.data;
-
       setRows((prevRows) =>
         prevRows.map((row) => (row.id === updatedRowData.id ? updatedRowData : row))
       );
@@ -289,8 +284,8 @@ export default function ProductsList() {
     } else {
       const filteredRows = rows.filter(
         (row) =>
-          row.productId.toLowerCase().includes(keyword) ||
-          row.productName.toString().includes(keyword)
+          row.id.toString().toLowerCase().includes(keyword) ||
+          row.name.toString().toLowerCase().includes(keyword)
       );
       setRows(filteredRows);
     }
@@ -442,29 +437,30 @@ export default function ProductsList() {
   ];
 
   React.useEffect(() => {
-    const getproductList = async () => {
-      try {
-        const response = await axiosInstance.get(`/products`, {
-          headers: {
-            "authorization": `Bearer ${token}`
-          }
-        });
-        const products = response.data.map((product, index) => ({
-          ...product,
-          id: product._id
-        }));
-        setRows(products);
-      } catch (error) {
-        console.log('Error fetching orders:', error);
-        toast.error(
-          error.response ? error.response.data.message : error.message,
-          { duration: 2000, position: "top-center" }
-        );
-      }
-    };
-
     getproductList();
   }, []);
+
+  const getproductList = async () => {
+    try {
+      const response = await axiosInstance.get(`/products`, {
+        headers: {
+          "authorization": `Bearer ${token}`
+        }
+      });
+      const products = response.data.map((product, index) => ({
+        ...product,
+        id: product._id
+      }));
+      setRows(products);
+      setinitialRows(products);
+    } catch (error) {
+      console.log('Error fetching orders:', error);
+      toast.error(
+        error.response ? error.response.data.message : error.message,
+        { duration: 2000, position: "top-center" }
+      );
+    }
+  };
 
 
 
@@ -500,7 +496,7 @@ export default function ProductsList() {
           processRowUpdate={processRowUpdate}
           slots={{
             toolbar: (props) => (
-              <EditToolbar {...props} imageUrl={imageUrl} setImageUrl={setImageUrl} />
+              <EditToolbar {...props} imageUrl={imageUrl} setImageUrl={setImageUrl} getproductList={getproductList} />
             ),
           }}
           slotProps={{

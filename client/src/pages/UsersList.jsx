@@ -48,7 +48,7 @@ function EditToolbar(props) {
 
 export default function UsersList() {
   const [rows, setRows] = useState([]);
-  const [initialRows, setinitialRows] = useState([]); // Added for initially loaded rows reference
+  const [initialRows, setinitialRows] = useState([]);
   const [token, setToken] = useState(JSON.parse(localStorage.getItem("admin_token")) || "");
   const [rowModesModel, setRowModesModel] = useState({});
   const [loading, setLoading] = useState(false);

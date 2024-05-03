@@ -47,7 +47,7 @@ const Dashboard = () => {
         <div className="card">
           <h2>Create New Admin</h2>
           <p>You can create new Admin</p>
-          <Link to="/page4">
+          <Link to="/registratration">
             <button>Create Admin</button>
           </Link>
         </div>
