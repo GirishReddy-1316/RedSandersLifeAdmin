@@ -29,7 +29,7 @@ const Login = () => {
       };
       try {
         const response = await axiosInstance.post(
-          "admin/login",
+          "/admin/login",
           formData
         );
         localStorage.setItem('admin_token', JSON.stringify(response.data.token));

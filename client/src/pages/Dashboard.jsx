@@ -5,22 +5,22 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 
 const Dashboard = () => {
-  const [token, setToken] = useState(JSON.parse(localStorage.getItem("auth")) || "");
+  const [token, setToken] = useState(JSON.parse(localStorage.getItem("admin_token")) || "");
   const [data, setData] = useState({});
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   if (token === "") {
-  //     navigate("/login");
-  //     toast.warn("Please login first to access dashboard");
-  //   }
-  // }, [token]);
+  useEffect(() => {
+    if (token === "") {
+      navigate("/login");
+      toast.warn("Please login first to access dashboard");
+    }
+  }, [token]);
 
   return (
     <div className='dashboard-main'>
       <h1>Dashboard</h1>
       <p>Hi Admin{data.msg}</p>
-      {/* <Link to="/logout" className="logout-button">Logout</Link> */}
+      <Link to="/logout" className="logout-button">Logout</Link>
 
       <div className="home-container">
         <div className="card">
