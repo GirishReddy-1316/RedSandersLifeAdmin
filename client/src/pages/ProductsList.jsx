@@ -25,9 +25,10 @@ import {
 } from "@mui/x-data-grid-generator";
 
 function EditToolbar(props) {
-  const { setRows, setRowModesModel, setImageUrl, imageUrl, getproductList } = props;
+  const { setRows, setRowModesModel, getproductList } = props;
   const [image, setImage] = React.useState(null);
   const [open, setOpen] = React.useState(false);
+  const [imageUrl, setImageUrl] = React.useState(null);
   const [token, setToken] = React.useState(JSON.parse(localStorage.getItem("admin_token")) || "");
   const [formData, setFormData] = React.useState({
     brandName: "jiyaba",
@@ -58,27 +59,57 @@ function EditToolbar(props) {
   };
 
   const handleFileChange = (e) => {
-    setFormData({
-      ...formData,
-      image: e.target.files[0],
-    });
-    setImage(e.target.files[0])
-
+    const selectedFile = e.target.files[0];
+    setImage(selectedFile);
   };
 
   const handleSubmit = async () => {
     try {
-      await handleUpload()
-      const formDataToSend = {
-        ...formData,
-        image: imageUrl
-      };
-      console.log(formDataToSend)
-      const response = await axiosInstance.post(`/products/insert`, formDataToSend, {
-        headers: {
-          'authorization': `Bearer ${token}`
+      if (!image) {
+        toast.error("Please select an image.");
+        return;
+      }
+
+      const formDataToSend = new FormData();
+      formDataToSend.append("file", image);
+      formDataToSend.append("upload_preset", "ml_default");
+
+      const response = await fetch(
+        "https://api.cloudinary.com/v1_1/dxhoawdbh/image/upload",
+        {
+          method: "POST",
+          body: formDataToSend,
         }
-      });
+      );
+
+      if (!response.ok) {
+        toast.error("Failed to upload image.");
+        return;
+      }
+
+      const imageData = await response.json();
+      const uploadedImageUrl = imageData.secure_url; // Store the uploaded image URL
+
+      const productData = {
+        ...formData,
+        image: uploadedImageUrl, // Use the uploaded image URL
+      };
+
+      const productResponse = await axiosInstance.post(
+        `/products/insert`,
+        productData,
+        {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (productResponse.status !== 201) {
+        toast.error("Failed to add product.");
+        return;
+      }
+
       await getproductList();
       toast.success("Product added successfully");
       setOpen(false);
@@ -88,33 +119,6 @@ function EditToolbar(props) {
     }
   };
 
-  const handleUpload = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("file", image);
-      formData.append("upload_preset", "ml_default");
-
-      const response = await fetch(
-        "https://api.cloudinary.com/v1_1/dxhoawdbh/image/upload",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setImageUrl(data.secure_url);
-        toast.success("Product uploaded successfully");
-      } else {
-        console.error("Failed to upload image");
-        toast.error("Failed to upload image");
-      }
-    } catch (error) {
-      toast.error("Failed to upload image");
-      console.error("Error uploading image:", error);
-    }
-  };
 
   return (
     <GridToolbarContainer>
@@ -215,7 +219,7 @@ export default function ProductsList() {
   const [rowModesModel, setRowModesModel] = React.useState({});
   const [initialRows, setinitialRows] = React.useState([]);
   const [token, setToken] = React.useState(JSON.parse(localStorage.getItem("admin_token")) || "");
-  const [imageUrl, setImageUrl] = React.useState(null);
+
 
   const handleRowEditStop = (params, event) => {
     if (params.reason === GridRowEditStopReasons.rowFocusOut) {
@@ -496,7 +500,7 @@ export default function ProductsList() {
           processRowUpdate={processRowUpdate}
           slots={{
             toolbar: (props) => (
-              <EditToolbar {...props} imageUrl={imageUrl} setImageUrl={setImageUrl} getproductList={getproductList} />
+              <EditToolbar {...props} getproductList={getproductList} />
             ),
           }}
           slotProps={{
