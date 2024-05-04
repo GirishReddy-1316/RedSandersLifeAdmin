@@ -110,26 +110,53 @@ export default function UsersList() {
   };
 
   const handleSaveClick = (id) => async () => {
-    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
-    const row = rows.find(r => r.id === id);
+    const editedRow = rows.find(r => r.id === id);
+    
     try {
       let axiosConfig = {
         headers: {
           'authorization': `Bearer ${token}`
         }
       };
-      console.log(row);
+    
       const response = await axiosInstance.put(`/admin/users/${id}`, {
-        username: row.username,
-        email: row.email,
+        username: editedRow.username,
+        email: editedRow.email,
       }, axiosConfig);
-
-      setRows(rows.map(r => (r.id === id ? { ...r, ...response.data } : r)));
+    
+      const updatedRow = response.data; // Assuming the response contains the updated row data
+    
+      setRows(rows.map(r => (r.id === id ? updatedRow : r)));
+      setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+    
       toast.success("User saved successfully");
     } catch (error) {
       toast.error("Error saving user: " + error.message);
     }
   };
+  
+
+  // const handleSaveClick = (id) => async () => {
+  //   setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+  //   const row = rows.find(r => r.id === id);
+  //   try {
+  //     let axiosConfig = {
+  //       headers: {
+  //         'authorization': `Bearer ${token}`
+  //       }
+  //     };
+  //     console.log(row);
+  //     const response = await axiosInstance.put(`/admin/users/${id}`, {
+  //       username: row.username,
+  //       email: row.email,
+  //     }, axiosConfig);
+
+  //     setRows(rows.map(r => (r.id === id ? { ...r, ...response.data } : r)));
+  //     toast.success("User saved successfully");
+  //   } catch (error) {
+  //     toast.error("Error saving user: " + error.message);
+  //   }
+  // };
 
   const handleDeleteClick = (id) => async () => {
     try {
