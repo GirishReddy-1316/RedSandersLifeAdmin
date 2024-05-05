@@ -24,23 +24,20 @@ import {
   randomId,
 } from "@mui/x-data-grid-generator";
 
-function EditToolbar(props) {
-  const { setRows, setRowModesModel, getproductList } = props;
+function EditToolbar({ getproductList }) {
   const [image, setImage] = React.useState(null);
   const [open, setOpen] = React.useState(false);
-  const [imageUrl, setImageUrl] = React.useState(null);
   const [token, setToken] = React.useState(JSON.parse(localStorage.getItem("admin_token")) || "");
   const [formData, setFormData] = React.useState({
-    brandName: "jiyaba",
+    brandName: "",
     image: "",
-    name: "Red Sanders Water",
-    price: "₹1000",
-    category: "Drink",
-    size: "3500 ml",
+    name: "",
+    price: "",
+    category: "",
+    size: "",
     featured: true,
-    slug: "red-sanders-water",
-    desc:
-      "Where does this come from: It's extracted from the roots of the red sanders plant using a special method. By drinking this water, you can enjoy extra health benefits along with a pleasant taste. Furthermore, the regular water used in this process is purified RO drinking water, and we've also added some natural sugars that are beneficial to our health.",
+    slug: "",
+    desc: ""
   });
 
   const handleOpen = () => {

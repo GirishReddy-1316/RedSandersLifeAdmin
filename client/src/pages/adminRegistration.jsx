@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { axiosInstance } from '../api';
+import { Container, Typography, Grid, Card, CardHeader, CardContent, TextField, Button } from '@mui/material';
 
 function AdminRegistrationPage() {
     const [token, setToken] = React.useState(JSON.parse(localStorage.getItem("admin_token")) || "");
@@ -36,36 +37,55 @@ function AdminRegistrationPage() {
     };
 
     return (
-        <div className="container m-auto">
-            <div className="row justify-content-center">
-                <div className="col-lg-6">
-                    <div className="card shadow-lg border-0 rounded-lg mt-5">
-                        <div className="card-header">
-                            <h3 className="text-center font-weight-light my-4">Create New Admin Account</h3>
-                        </div>
-                        <div className="card-body">
+        <Container maxWidth="md" mt={5}>
+            <Grid container justifyContent="center">
+                <Grid item xs={12} md={6}>
+                    <Card>
+                        <CardHeader title="Create New Admin Account" sx={{ textAlign: 'center', backgroundColor: 'primary.main', color: 'common.white' }} />
+                        <CardContent>
                             <form onSubmit={handleSubmit}>
-                                <div className="form-floating mb-3">
-                                    <input type="email" className="form-control" id="email" name="email" value={formData.email} onChange={handleChange} required />
-                                    <label htmlFor="email">Email</label>
-                                </div>
-                                <div className="form-floating mb-3">
-                                    <input type="password" className="form-control" id="password" name="password" value={formData.password} onChange={handleChange} required />
-                                    <label htmlFor="password">Password</label>
-                                </div>
-                                <div className="form-floating mb-3">
-                                    <input type="tel" className="form-control" id="phoneNumber" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} />
-                                    <label htmlFor="phoneNumber">Phone Number</label>
-                                </div>
-                                <div className="d-flex align-items-center justify-content-between mt-4 mb-0">
-                                    <button type="submit" className="btn btn-primary">Submit</button>
-                                </div>
+                                <TextField
+                                    fullWidth
+                                    label="Email"
+                                    id="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    style={{ borderBottom: "none" }}
+                                    margin="normal"
+                                    required
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Password"
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    style={{ borderBottom: "none" }}
+                                    margin="normal"
+                                    required
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Phone Number"
+                                    id="phoneNumber"
+                                    name="phoneNumber"
+                                    value={formData.phoneNumber}
+                                    onChange={handleChange}
+                                    style={{ borderBottom: "none" }}
+                                    margin="normal"
+                                />
+                                <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
+                                    Submit
+                                </Button>
                             </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                        </CardContent>
+                    </Card>
+                </Grid>
+            </Grid>
+        </Container>
     );
 }
 

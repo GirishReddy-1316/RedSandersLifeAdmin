@@ -23,7 +23,7 @@ import { toast } from 'react-toastify';
 import { useEffect } from 'react';
 import { axiosInstance } from '../api';
 
-const orderStatus = ['Placed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled']
+const orderStatus = ['Placed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
 
 export default function OrdersList() {
   const [rows, setRows] = React.useState([]);
@@ -128,7 +128,6 @@ export default function OrdersList() {
     {
       field: 'billingAddress',
       headerName: 'Billing Address',
-      type: 'number',
       width: 180,
       editable: true,
       align: 'left',
@@ -146,7 +145,6 @@ export default function OrdersList() {
     {
       field: 'listOfItemsPurchased',
       headerName: 'Items Purchased',
-      type: 'sting',
       width: 180,
       editable: true,
       align: 'left',
