@@ -87,30 +87,13 @@ const Login = () => {
                 )}
               </div>
 
-              <div className="login-center-options">
-                <div className="remember-div">
-                  <input type="checkbox" id="remember-checkbox" />
-                  <label htmlFor="remember-checkbox">
-                    Remember for 30 days
-                  </label>
-                </div>
+              <div className="login-center-options">                
                 <a href="#" className="forgot-pass-link">
                   Forgot password?
                 </a>
-              </div>
-              <div className="login-center-buttons">
-                <button type="submit">Log In</button>
-                <button type="submit">
-                  <img src={GoogleSvg} alt="" />
-                  Log In with Google
-                </button>
-              </div>
+              </div>              
             </form>
           </div>
-
-          <p className="login-bottom-p">
-            Don't have an account? <Link to="/register">Sign Up</Link>
-          </p>
         </div>
       </div>
     </div>
