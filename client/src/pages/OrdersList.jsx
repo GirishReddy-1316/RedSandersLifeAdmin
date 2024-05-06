@@ -70,7 +70,7 @@ export default function OrdersList() {
     };
     const response = await axiosInstance.delete(`/order/delete/${id}`, axiosConfig);
     setRows(rows.filter((row) => row.id !== id));
-    toast.success("Order deleted successfully");
+    toast.success("Order deleted successfully", { duration: 2000 });
   };
 
   const handleCancelClick = (id) => () => {

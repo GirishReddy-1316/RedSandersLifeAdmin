@@ -24,7 +24,7 @@ function AdminRegistrationPage() {
                     "authorization": `Bearer ${token}`
                 }
             });
-            toast.success("Admin account created successfully!");
+            toast.success("Admin account created successfully!" , { duration: 2000 });
             setFormData({
                 email: '',
                 password: '',

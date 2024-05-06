@@ -33,7 +33,7 @@ const Login = () => {
           formData
         );
         localStorage.setItem('admin_token', JSON.stringify(response.data.token));
-        toast.success("Login successfull");
+        toast.success("Login successfull", { duration: 2000 });
         navigate("/dashboard");
       } catch (err) {
         console.log(err);
@@ -46,7 +46,7 @@ const Login = () => {
 
   useEffect(() => {
     if (token !== "") {
-      toast.success("You already logged in");
+      toast.success("You already logged in" , { duration: 2000 });
       navigate("/dashboard");
     }
   }, []);
@@ -87,11 +87,14 @@ const Login = () => {
                 )}
               </div>
 
-              <div className="login-center-options">                
+              <div className="login-center-options">               
                 <a href="#" className="forgot-pass-link">
                   Forgot password?
                 </a>
-              </div>              
+              </div>
+              <div className="login-center-buttons">
+                <button type="submit">Log In</button>               
+              </div>
             </form>
           </div>
         </div>

@@ -108,7 +108,7 @@ function EditToolbar({ getproductList }) {
       }
 
       await getproductList();
-      toast.success("Product added successfully");
+      toast.success("Product added successfully", { duration: 2000 });
       setOpen(false);
     } catch (error) {
       console.error("Error adding product:", error);
@@ -246,7 +246,7 @@ export default function ProductsList() {
         prevRows.map((row) => (row.id === updatedRowData.id ? updatedRowData : row))
       );
 
-      toast.success("Product saved successfully");
+      toast.success("Product saved successfully", { duration: 2000 });
     } catch (error) {
       console.error("Error saving product:", error);
       toast.error("Failed to save product. Please try again later.");
@@ -263,7 +263,7 @@ export default function ProductsList() {
     };
     const response = await axiosInstance.delete(`/products/delete/${id}`, axiosConfig);
     setRows(rows.filter((row) => row.id !== id));
-    toast.success("Product deleted successfully");
+    toast.success("Product deleted successfully", { duration: 2000 });
   };
 
   const handleCancelClick = (id) => () => {

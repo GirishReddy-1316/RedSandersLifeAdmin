@@ -42,7 +42,7 @@ function EditToolbar(props) {
     try {
       const response = await axiosInstance.post(`/admin/users/create`, userData, axiosConfig);
       await fetchUsers();
-      toast.success("User added successfully");
+      toast.success("User added successfully", { duration: 2000 });
     } catch (error) {
       toast.error("Failed to add user: " + error.message);
     }
@@ -87,7 +87,7 @@ export default function UsersList() {
       setRows(usersWithIds);
       setInitialRows(usersWithIds);
       setLoading(false);
-      toast.success("Users loaded successfully");
+      toast.success("Users loaded successfully", { duration: 2000 });
     } catch (error) {
       setError(error.message);
       setLoading(false);
@@ -141,7 +141,7 @@ export default function UsersList() {
 
       setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
 
-      toast.success("User saved successfully");
+      toast.success("User saved successfully", { duration: 2000 });
     } catch (error) {
       toast.error("Error saving user: " + error.message);
     }
@@ -157,7 +157,7 @@ export default function UsersList() {
       };
       await axiosInstance.delete(`/admin/users/${id}`, axiosConfig);
       setRows(rows.filter(row => row.id !== id));
-      toast.success("User deleted successfully");
+      toast.success("User deleted successfully", { duration: 2000 });
     } catch (error) {
       toast.error("Error deleting user: " + error.message);
     }

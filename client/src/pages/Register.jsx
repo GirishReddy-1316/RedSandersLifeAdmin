@@ -36,7 +36,7 @@ const Login = () => {
         };
         try{
         const response = await axios.post("/register", formData);
-         toast.success("Registration successfull");
+         toast.success("Registration successfull", { duration: 2000 });
          navigate("/login");
        }catch(err){
          toast.error(err.message);
@@ -55,7 +55,7 @@ const Login = () => {
 
   useEffect(() => {
     if(token !== ""){
-      toast.success("You already logged in");
+      toast.success("You already logged in", { duration: 2000 });
       navigate("/dashboard");
     }
   }, []);
