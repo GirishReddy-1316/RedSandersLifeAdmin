@@ -81,7 +81,8 @@ export default function UsersList() {
       const response = await axiosInstance.get("/admin/customer-list", axiosConfig);
       const usersWithIds = response.data.map((user) => ({
         ...user,
-        id: user._id, // Assign the _id property as the id for each row
+        id: user._id,
+        isGoogleSignIn: user.googleEmail ? true : false,
         createdAt: new Date(user.createdAt),
       }));
       setRows(usersWithIds);
@@ -205,6 +206,15 @@ export default function UsersList() {
     {
       field: "email",
       headerName: "Email",
+      type: "string",
+      width: 180,
+      align: "left",
+      headerAlign: "left",
+      editable: true,
+    },
+    {
+      field: "isGoogleSignIn",
+      headerName: "IsGoogleSignIn",
       type: "string",
       width: 180,
       align: "left",
