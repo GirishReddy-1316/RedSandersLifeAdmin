@@ -20,15 +20,15 @@ import {
   GridActionsCellItem,
   GridRowEditStopReasons,
 } from "@mui/x-data-grid";
-import {
-  randomId,
-} from "@mui/x-data-grid-generator";
+import { randomId } from "@mui/x-data-grid-generator";
 import { IconButton } from "@mui/material";
 
 function EditToolbar({ getproductList }) {
   const [image, setImage] = React.useState(null);
   const [open, setOpen] = React.useState(false);
-  const [token, setToken] = React.useState(JSON.parse(localStorage.getItem("admin_token")) || "");
+  const [token, setToken] = React.useState(
+    JSON.parse(localStorage.getItem("admin_token")) || ""
+  );
   const [formData, setFormData] = React.useState({
     brandName: "",
     image: "",
@@ -39,11 +39,9 @@ function EditToolbar({ getproductList }) {
     featured: true,
     slug: "",
     desc: "",
-    additionalBulletPoints: [
-      { heading: "", description: "" }
-    ],
+    additionalBulletPoints: [{ heading: "", description: "" }],
     isProductReady: true,
-    ingredients: "Red Sanders Water + Detox Water"
+    ingredients: "",
   });
 
   const handleOpen = () => {
@@ -125,11 +123,14 @@ function EditToolbar({ getproductList }) {
   const handleAddBulletPoint = () => {
     const newBulletPoint = {
       heading: "",
-      description: ""
+      description: "",
     };
     setFormData({
       ...formData,
-      additionalBulletPoints: [...formData.additionalBulletPoints, newBulletPoint]
+      additionalBulletPoints: [
+        ...formData.additionalBulletPoints,
+        newBulletPoint,
+      ],
     });
   };
 
@@ -138,7 +139,7 @@ function EditToolbar({ getproductList }) {
     updatedBulletPoints.splice(index, 1);
     setFormData({
       ...formData,
-      additionalBulletPoints: updatedBulletPoints
+      additionalBulletPoints: updatedBulletPoints,
     });
   };
 
@@ -147,10 +148,9 @@ function EditToolbar({ getproductList }) {
     updatedBulletPoints[index][key] = value;
     setFormData({
       ...formData,
-      additionalBulletPoints: updatedBulletPoints
+      additionalBulletPoints: updatedBulletPoints,
     });
   };
-
 
   return (
     <GridToolbarContainer>
@@ -170,11 +170,13 @@ function EditToolbar({ getproductList }) {
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 400,
+            width: 800,
             bgcolor: "background.paper",
             border: "2px solid #000",
             boxShadow: 24,
             p: 4,
+            maxHeight: 500,
+            overflowY: "auto",
           }}
         >
           <h2 id="modal-title">Add New Product</h2>
@@ -185,6 +187,7 @@ function EditToolbar({ getproductList }) {
             onChange={handleChange}
             fullWidth
             margin="normal"
+            sx={{ width: "calc(50% - 16px)", mr: 2 }}
           />
           <TextField
             label="Product Name"
@@ -193,6 +196,7 @@ function EditToolbar({ getproductList }) {
             onChange={handleChange}
             fullWidth
             margin="normal"
+            sx={{ width: "calc(50% - 16px)", mr: 2 }}
           />
           <TextField
             label="Price"
@@ -201,6 +205,7 @@ function EditToolbar({ getproductList }) {
             onChange={handleChange}
             fullWidth
             margin="normal"
+            sx={{ width: "calc(50% - 16px)", mr: 2 }}
           />
           <TextField
             label="Category"
@@ -209,6 +214,7 @@ function EditToolbar({ getproductList }) {
             onChange={handleChange}
             fullWidth
             margin="normal"
+            sx={{ width: "calc(50% - 16px)", mr: 2 }}
           />
           <TextField
             label="Size"
@@ -217,6 +223,7 @@ function EditToolbar({ getproductList }) {
             onChange={handleChange}
             fullWidth
             margin="normal"
+            sx={{ width: "calc(50% - 16px)", mr: 2 }}
           />
           <TextField
             label="Slug"
@@ -225,6 +232,7 @@ function EditToolbar({ getproductList }) {
             onChange={handleChange}
             fullWidth
             margin="normal"
+            sx={{ width: "calc(50% - 16px)", mr: 2 }}
           />
           <TextField
             label="Description"
@@ -233,6 +241,7 @@ function EditToolbar({ getproductList }) {
             onChange={handleChange}
             fullWidth
             margin="normal"
+            sx={{ width: "calc(50% - 16px)", mr: 2 }}
           />
           <TextField
             label="Ingredients"
@@ -241,36 +250,52 @@ function EditToolbar({ getproductList }) {
             onChange={handleChange}
             fullWidth
             margin="normal"
+            sx={{ width: "calc(50% - 16px)", mr: 2 }}
           />
           {formData.additionalBulletPoints.map((bulletPoint, index) => (
-            <div key={index}>
+            <div key={index} style={{ display: "flex", alignItems: "center" }}>
               <TextField
                 label="Heading"
                 value={bulletPoint.heading}
-                onChange={(e) => handleBulletPointChange(index, 'heading', e.target.value)}
+                onChange={(e) =>
+                  handleBulletPointChange(index, "heading", e.target.value)
+                }
                 fullWidth
                 margin="normal"
+                style={{ marginRight: "8px" }}
               />
               <TextField
                 label="Description"
                 value={bulletPoint.description}
-                onChange={(e) => handleBulletPointChange(index, 'description', e.target.value)}
+                onChange={(e) =>
+                  handleBulletPointChange(index, "description", e.target.value)
+                }
                 fullWidth
                 margin="normal"
+                style={{ marginRight: "8px" }}
               />
-              <IconButton onClick={() => handleRemoveBulletPoint(index)} aria-label="delete">
-                {/* <DeleteIcon /> */}
-                Delete
+              <IconButton
+                onClick={() => handleRemoveBulletPoint(index)}
+                aria-label="delete"
+              >
+                <DeleteIcon />
               </IconButton>
             </div>
           ))}
-          <Button onClick={handleAddBulletPoint}>Add Bullet Point</Button>
+          <Button onClick={handleAddBulletPoint} startIcon={<AddIcon />}>
+            Add headings
+          </Button>
           <CloudinaryContext cloudName="ml_default">
             <input type="file" onChange={handleFileChange} />
           </CloudinaryContext>
-          <Button variant="contained" onClick={handleSubmit}>
-            Add
-          </Button>
+          <div style={{ display: "flex", justifyContent: "space-between" , marginTop: '10px' }}>
+            <Button variant="contained" onClick={handleSubmit}>
+              Add
+            </Button>
+            <Button variant="contained" onClick={handleClose}>
+              Close
+            </Button>
+          </div>
         </Box>
       </Modal>
     </GridToolbarContainer>
@@ -281,8 +306,9 @@ export default function ProductsList() {
   const [rows, setRows] = React.useState([]);
   const [rowModesModel, setRowModesModel] = React.useState({});
   const [initialRows, setinitialRows] = React.useState([]);
-  const [token, setToken] = React.useState(JSON.parse(localStorage.getItem("admin_token")) || "");
-
+  const [token, setToken] = React.useState(
+    JSON.parse(localStorage.getItem("admin_token")) || ""
+  );
 
   const handleRowEditStop = (params, event) => {
     if (params.reason === GridRowEditStopReasons.rowFocusOut) {
@@ -301,15 +327,21 @@ export default function ProductsList() {
       const editedRow = rows.find((row) => row.id === id);
       let axiosConfig = {
         headers: {
-          'authorization': `Bearer ${token}`
-        }
+          authorization: `Bearer ${token}`,
+        },
       };
 
       let response;
-      response = await axiosInstance.post(`/products/update/${id}`, editedRow, axiosConfig);
+      response = await axiosInstance.post(
+        `/products/update/${id}`,
+        editedRow,
+        axiosConfig
+      );
       const updatedRowData = response.data;
       setRows((prevRows) =>
-        prevRows.map((row) => (row.id === updatedRowData.id ? updatedRowData : row))
+        prevRows.map((row) =>
+          row.id === updatedRowData.id ? updatedRowData : row
+        )
       );
 
       toast.success("Product saved successfully", { duration: 2000 });
@@ -320,14 +352,16 @@ export default function ProductsList() {
     }
   };
 
-
   const handleDeleteClick = (id) => async () => {
     let axiosConfig = {
       headers: {
-        'authorization': `Bearer ${token}`
-      }
+        authorization: `Bearer ${token}`,
+      },
     };
-    const response = await axiosInstance.delete(`/products/delete/${id}`, axiosConfig);
+    const response = await axiosInstance.delete(
+      `/products/delete/${id}`,
+      axiosConfig
+    );
     setRows(rows.filter((row) => row.id !== id));
     toast.success("Product deleted successfully", { duration: 2000 });
   };
@@ -358,7 +392,6 @@ export default function ProductsList() {
     }
   };
 
-
   const processRowUpdate = (newRow) => {
     const updatedRow = { ...newRow, isNew: false };
     setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
@@ -371,8 +404,13 @@ export default function ProductsList() {
 
   const columns = [
     {
-      field: "id", headerName: "Product Id", type: "number", width: 180, align: "left",
-      headerAlign: "left", editable: true
+      field: "id",
+      headerName: "Product Id",
+      type: "number",
+      width: 180,
+      align: "left",
+      headerAlign: "left",
+      editable: true,
     },
     {
       field: "brandName",
@@ -511,25 +549,23 @@ export default function ProductsList() {
     try {
       const response = await axiosInstance.get(`/products`, {
         headers: {
-          "authorization": `Bearer ${token}`
-        }
+          authorization: `Bearer ${token}`,
+        },
       });
       const products = response.data.map((product, index) => ({
         ...product,
-        id: product._id
+        id: product._id,
       }));
       setRows(products);
       setinitialRows(products);
     } catch (error) {
-      console.log('Error fetching orders:', error);
+      console.log("Error fetching orders:", error);
       toast.error(
         error.response ? error.response.data.message : error.message,
         { duration: 2000, position: "top-center" }
       );
     }
   };
-
-
 
   return (
     <div>
@@ -549,10 +585,15 @@ export default function ProductsList() {
           },
         }}
       >
-        <input type="text" style={{
-          height: '35px',
-          margin: '5px 0',
-        }} placeholder="Search..." onChange={handleSearch} />
+        <input
+          type="text"
+          style={{
+            height: "35px",
+            margin: "5px 0",
+          }}
+          placeholder="Search..."
+          onChange={handleSearch}
+        />
         <DataGrid
           rows={rows}
           columns={columns}
