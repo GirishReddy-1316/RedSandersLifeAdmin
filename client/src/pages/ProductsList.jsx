@@ -23,6 +23,7 @@ import {
 import {
   randomId,
 } from "@mui/x-data-grid-generator";
+import { IconButton } from "@mui/material";
 
 function EditToolbar({ getproductList }) {
   const [image, setImage] = React.useState(null);
@@ -37,7 +38,12 @@ function EditToolbar({ getproductList }) {
     size: "",
     featured: true,
     slug: "",
-    desc: ""
+    desc: "",
+    additionalBulletPoints: [
+      { heading: "", description: "" }
+    ],
+    isProductReady: true,
+    ingredients: "Red Sanders Water + Detox Water"
   });
 
   const handleOpen = () => {
@@ -114,6 +120,35 @@ function EditToolbar({ getproductList }) {
       console.error("Error adding product:", error);
       toast.error("Failed to add product. Please try again later.");
     }
+  };
+
+  const handleAddBulletPoint = () => {
+    const newBulletPoint = {
+      heading: "",
+      description: ""
+    };
+    setFormData({
+      ...formData,
+      additionalBulletPoints: [...formData.additionalBulletPoints, newBulletPoint]
+    });
+  };
+
+  const handleRemoveBulletPoint = (index) => {
+    const updatedBulletPoints = [...formData.additionalBulletPoints];
+    updatedBulletPoints.splice(index, 1);
+    setFormData({
+      ...formData,
+      additionalBulletPoints: updatedBulletPoints
+    });
+  };
+
+  const handleBulletPointChange = (index, key, value) => {
+    const updatedBulletPoints = [...formData.additionalBulletPoints];
+    updatedBulletPoints[index][key] = value;
+    setFormData({
+      ...formData,
+      additionalBulletPoints: updatedBulletPoints
+    });
   };
 
 
@@ -199,6 +234,37 @@ function EditToolbar({ getproductList }) {
             fullWidth
             margin="normal"
           />
+          <TextField
+            label="Ingredients"
+            name="ingredients"
+            value={formData.ingredients}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+          />
+          {formData.additionalBulletPoints.map((bulletPoint, index) => (
+            <div key={index}>
+              <TextField
+                label="Heading"
+                value={bulletPoint.heading}
+                onChange={(e) => handleBulletPointChange(index, 'heading', e.target.value)}
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="Description"
+                value={bulletPoint.description}
+                onChange={(e) => handleBulletPointChange(index, 'description', e.target.value)}
+                fullWidth
+                margin="normal"
+              />
+              <IconButton onClick={() => handleRemoveBulletPoint(index)} aria-label="delete">
+                {/* <DeleteIcon /> */}
+                Delete
+              </IconButton>
+            </div>
+          ))}
+          <Button onClick={handleAddBulletPoint}>Add Bullet Point</Button>
           <CloudinaryContext cloudName="ml_default">
             <input type="file" onChange={handleFileChange} />
           </CloudinaryContext>
