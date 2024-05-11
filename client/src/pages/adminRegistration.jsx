@@ -24,7 +24,7 @@ function AdminRegistrationPage() {
                     "authorization": `Bearer ${token}`
                 }
             });
-            toast.success("Admin account created successfully!" , { duration: 2000 });
+            toast.success("Admin account created successfully!", { duration: 2000 });
             setFormData({
                 email: '',
                 password: '',
@@ -32,7 +32,11 @@ function AdminRegistrationPage() {
             })
         } catch (error) {
             console.error('Error creating admin account:', error);
-            toast.error("Failed to create admin account!");
+            if (error.response) {
+                toast.error(`Error: ${error.response.data.message}`);
+            } else {
+                toast.error(`Error: ${error.message}`);
+            }
         }
     };
 
