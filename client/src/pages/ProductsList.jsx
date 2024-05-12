@@ -181,7 +181,7 @@ function EditToolbar({ getproductList }) {
         >
           <h2 id="modal-title">Add New Product</h2>
           <TextField
-            label="Brand Name"
+            label="Brand Name : you can give Jiyaba for now"
             name="brandName"
             value={formData.brandName}
             onChange={handleChange}
@@ -208,7 +208,7 @@ function EditToolbar({ getproductList }) {
             sx={{ width: "calc(50% - 16px)", mr: 2 }}
           />
           <TextField
-            label="Category"
+            label="Category: Powder or Bevarage"
             name="category"
             value={formData.category}
             onChange={handleChange}
@@ -217,7 +217,7 @@ function EditToolbar({ getproductList }) {
             sx={{ width: "calc(50% - 16px)", mr: 2 }}
           />
           <TextField
-            label="Size"
+            label="Size: ml or gm"
             name="size"
             value={formData.size}
             onChange={handleChange}
@@ -226,7 +226,7 @@ function EditToolbar({ getproductList }) {
             sx={{ width: "calc(50% - 16px)", mr: 2 }}
           />
           <TextField
-            label="Slug"
+            label="Slug - Product end url"
             name="slug"
             value={formData.slug}
             onChange={handleChange}
@@ -235,7 +235,7 @@ function EditToolbar({ getproductList }) {
             sx={{ width: "calc(50% - 16px)", mr: 2 }}
           />
           <TextField
-            label="Description"
+            label="Description : Main description about product"
             name="desc"
             value={formData.desc}
             onChange={handleChange}
@@ -255,7 +255,7 @@ function EditToolbar({ getproductList }) {
           {formData.additionalBulletPoints.map((bulletPoint, index) => (
             <div key={index} style={{ display: "flex", alignItems: "center" }}>
               <TextField
-                label="Heading"
+                label={`Heading ${index + 1}`}
                 value={bulletPoint.heading}
                 onChange={(e) =>
                   handleBulletPointChange(index, "heading", e.target.value)
@@ -265,7 +265,7 @@ function EditToolbar({ getproductList }) {
                 style={{ marginRight: "8px" }}
               />
               <TextField
-                label="Description"
+                 label={`Description ${index + 1}`}
                 value={bulletPoint.description}
                 onChange={(e) =>
                   handleBulletPointChange(index, "description", e.target.value)
@@ -285,15 +285,45 @@ function EditToolbar({ getproductList }) {
           <Button onClick={handleAddBulletPoint} startIcon={<AddIcon />}>
             Add headings
           </Button>
-          <CloudinaryContext cloudName="ml_default">
-            <input type="file" onChange={handleFileChange} />
-          </CloudinaryContext>
-          <div style={{ display: "flex", justifyContent: "space-between" , marginTop: '10px' }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginTop: "10px",
+            }}
+          >
+            <div>Upload product image here :</div>
+            <div>
+              <CloudinaryContext cloudName="ml_default">
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  style={{
+                    border: "2px solid #ccc",
+                    borderRadius: "4px",
+                    padding: "8px 12px",
+                    fontSize: "16px",
+                    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+                    transition: "border-color 0.3s ease",
+                    width: "100%",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </CloudinaryContext>
+            </div>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginTop: "10px",
+            }}
+          >
             <Button variant="contained" onClick={handleSubmit}>
-              Add
+              Save
             </Button>
             <Button variant="contained" onClick={handleClose}>
-              Close
+              Cancel
             </Button>
           </div>
         </Box>
