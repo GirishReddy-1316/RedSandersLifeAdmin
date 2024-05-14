@@ -13,15 +13,10 @@ import {
   GridActionsCellItem,
   GridRowEditStopReasons,
 } from '@mui/x-data-grid';
-import {
-  randomCreatedDate,
-  randomTraderName,
-  randomId,
-  randomArrayItem,
-} from '@mui/x-data-grid-generator';
 import { toast } from 'react-toastify';
 import { useEffect } from 'react';
 import { axiosInstance } from '../api';
+import { Button } from '@mui/material';
 
 const orderStatus = ['Placed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
 
@@ -29,6 +24,8 @@ export default function OrdersList() {
   const [rows, setRows] = React.useState([]);
   const [rowModesModel, setRowModesModel] = React.useState({});
   const [token, setToken] = React.useState(JSON.parse(localStorage.getItem("admin_token")) || "");
+  const [fromDate, setFromDate] = React.useState(null);
+  const [toDate, setToDate] = React.useState(null);
 
   const handleRowEditStop = (params, event) => {
     if (params.reason === GridRowEditStopReasons.rowFocusOut) {
@@ -226,48 +223,91 @@ export default function OrdersList() {
     },
   ];
 
-  useEffect(() => {
-    const fetchUserOrders = async () => {
-      try {
-        const response = await axiosInstance.get(`/order/get-all`, {
-          headers: {
-            "authorization": `Bearer ${token}`
-          }
-        });
-        const formattedRows = response.data.map(order => ({
-          id: order._id,
-          customerName: order?.mergedCustomer?.username || "",
-          orderedOn: new Date(order.createdAt),
-          phoneNumber: order?.mergedCustomer?.phoneNumber || "",
-          emailId: order?.mergedCustomer?.email,
-          billingAddress: order.shippingAddress.street + ', ' + order.shippingAddress.city,
-          pin: order.shippingAddress.pin,
-          listOfItemsPurchased: order.products.map(product => `${product.quantity} - ${product.name}`).join(', '),
-          quantity: order.products.reduce((total, product) => total + product.quantity, 0),
-          totalAmount: order.totalPrice,
-          orderStatus: order.status,
-        }));
-
-        setRows(formattedRows);
-      } catch (error) {
-        console.log('Error fetching orders:', error);
-        toast.error(
-          error.response ? error.response.data.message : error.message,
-          { duration: 2000, position: "top-center" }
-        );
+  const fetchUserOrders = async () => {
+    let config;
+    if (fromDate && toDate) {
+      config = {
+        headers: {
+          "authorization": `Bearer ${token}`
+        },
+        params: { fromDate, toDate }
       }
-    };
+    } else {
+      config = {
+        headers: {
+          "authorization": `Bearer ${token}`
+        }
+      }
+    }
+    try {
+      const response = await axiosInstance.get(`/admin/orderList`, config);
+      const formattedRows = response.data.map(order => ({
+        id: order._id,
+        customerName: order?.mergedCustomer?.username || "",
+        orderedOn: new Date(order.createdAt),
+        phoneNumber: order?.mergedCustomer?.phoneNumber || "",
+        emailId: order?.mergedCustomer?.email,
+        billingAddress: order.shippingAddress.street + ', ' + order.shippingAddress.city,
+        pin: order.shippingAddress.pin,
+        listOfItemsPurchased: order.products.map(product => `${product.quantity} - ${product.name}`).join(', '),
+        quantity: order.products.reduce((total, product) => total + product.quantity, 0),
+        totalAmount: order.totalPrice,
+        orderStatus: order.status,
+      }));
 
+      setRows(formattedRows);
+
+    } catch (error) {
+      console.log('Error fetching orders:', error);
+      toast.error(
+        error.response ? error.response.data.message : error.message,
+        { duration: 2000, position: "top-center" }
+      );
+    }
+  };
+
+
+  useEffect(() => {
     fetchUserOrders();
-
   }, []);
+
+  function fetchfilterOrderList() {
+    if (fromDate && toDate) {
+      fetchUserOrders();
+    }
+  }
 
   return (
     <div>
       <h1>Orders List</h1>
-      <Link to="/dashboard">
-        <button>Go to Dashboard</button>
-      </Link>
+      <div style={{ padding: '10px', display: 'flex', alignItems: 'center' }}>
+        <Link to="/dashboard">
+          <button>Go to Dashboard</button>
+        </Link>
+        <div style={{ padding: '10px', display: 'flex', alignItems: 'center' }}>
+          <span style={{ marginRight: '10px', fontWeight: 'bold' }}>From Date: </span>
+          <input
+            type="date"
+            onChange={(e) => { setFromDate(e.target.value) }}
+            value={fromDate}
+            style={{ padding: '5px', borderRadius: '5px', border: '1px solid #ccc' }}
+            format="y-MM-dd"
+          />
+        </div>
+        <div style={{ padding: '10px', display: 'flex', alignItems: 'center' }}>
+          <span style={{ marginRight: '10px', fontWeight: 'bold' }}>To Date: </span>
+          <input
+            type="date"
+            onChange={(e) => { setToDate(e.target.value) }}
+            value={toDate}
+            style={{ padding: '5px', borderRadius: '5px', border: '1px solid #ccc' }}
+            format="y-MM-dd"
+          />
+        </div>
+        <Button variant="contained" onClick={() => fetchfilterOrderList()}>
+          Apply Filter
+        </Button>
+      </div>
       <Box
         sx={{
           height: 500,

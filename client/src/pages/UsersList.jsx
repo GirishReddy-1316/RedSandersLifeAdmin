@@ -24,6 +24,8 @@ function EditToolbar(props) {
   let { fetchUsers } = props;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [token, setToken] = React.useState(JSON.parse(localStorage.getItem("admin_token")) || "");
+  const [fromDate, setFromDate] = useState(null);
+  const [toDate, setToDate] = useState(null);
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -47,10 +49,34 @@ function EditToolbar(props) {
       toast.error("Failed to add user: " + error.message);
     }
   };
+
   return (
     <GridToolbarContainer>
       <Button color="primary" startIcon={<AddIcon />} onClick={handleOpenModal}>
         Add user
+      </Button>
+      <div style={{ padding: '10px', display: 'flex', alignItems: 'center' }}>
+        <span style={{ marginRight: '10px', fontWeight: 'bold' }}>From Date: </span>
+        <input
+          type="date"
+          onChange={(e) => { setFromDate(e.target.value) }}
+          value={fromDate}
+          style={{ padding: '5px', borderRadius: '5px', border: '1px solid #ccc' }}
+          format="y-MM-dd"
+        />
+      </div>
+      <div style={{ padding: '10px', display: 'flex', alignItems: 'center' }}>
+        <span style={{ marginRight: '10px', fontWeight: 'bold' }}>To Date: </span>
+        <input
+          type="date"
+          onChange={(e) => { setToDate(e.target.value) }}
+          value={toDate}
+          style={{ padding: '5px', borderRadius: '5px', border: '1px solid #ccc' }}
+          format="y-MM-dd"
+        />
+      </div>
+      <Button variant="contained" onClick={() => props.fetchfilterUsers({ fromDate, toDate })}>
+        Apply Filter
       </Button>
       <AddUserModal
         open={isModalOpen}
@@ -68,6 +94,41 @@ export default function UsersList() {
   const [rowModesModel, setRowModesModel] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+
+  const fetchfilterUsers = async (params) => {
+    if (!params.fromDate && !params.from) {
+      toast.warning("Please provide a valid from date.", { duration: 2000 });
+      return;
+    }
+    setLoading(true);
+    toast.info("Loading users...");
+    try {
+      const axiosConfig = {
+        headers: {
+          'authorization': `Bearer ${token}`
+        },
+        params
+      };
+      const response = await axiosInstance.get("/admin/customer-list", axiosConfig);
+      const usersWithIds = response.data.map((user) => ({
+        ...user,
+        id: user._id,
+        isGoogleSignIn: user.googleEmail ? true : false,
+        createdAt: new Date(user.createdAt),
+      }));
+      setRows(usersWithIds);
+      setInitialRows(usersWithIds);
+      setLoading(false);
+      toast.success("Users loaded successfully", { duration: 2000 });
+    } catch (error) {
+      setError(error.message);
+      setLoading(false);
+      toast.error("Error loading users: " + error.message);
+    }
+  };
+
+
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -213,6 +274,15 @@ export default function UsersList() {
       editable: true,
     },
     {
+      field: 'phoneNumber',
+      headerName: 'Phone Number',
+      type: 'number',
+      width: 180,
+      editable: true,
+      align: 'left',
+      headerAlign: 'left',
+    },
+    {
       field: "isGoogleSignIn",
       headerName: "IsGoogleSignIn",
       type: "string",
@@ -223,7 +293,7 @@ export default function UsersList() {
     },
     {
       field: "createdAt",
-      headerName: "Registration Date",
+      headerName: "Registration Date \n MM/DD/YYYY",
       type: "date",
       width: 180,
       editable: true,
@@ -307,7 +377,7 @@ export default function UsersList() {
           onRowEditStop={(newRow, oldRow) => processRowUpdate(newRow)}
           slots={{
             toolbar: (props) => (
-              <EditToolbar {...props} fetchUsers={fetchUsers} />
+              <EditToolbar {...props} fetchUsers={fetchUsers} fetchfilterUsers={fetchfilterUsers} />
             ),
           }}
           slotProps={{
