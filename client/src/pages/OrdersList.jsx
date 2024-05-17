@@ -24,8 +24,8 @@ export default function OrdersList() {
   const [rows, setRows] = React.useState([]);
   const [rowModesModel, setRowModesModel] = React.useState({});
   const [token, setToken] = React.useState(JSON.parse(localStorage.getItem("admin_token")) || "");
-  const [fromDate, setFromDate] = React.useState(null);
-  const [toDate, setToDate] = React.useState(null);
+  const [fromDate, setFromDate] = React.useState("");
+  const [toDate, setToDate] = React.useState("");
 
   const handleRowEditStop = (params, event) => {
     if (params.reason === GridRowEditStopReasons.rowFocusOut) {
@@ -271,10 +271,16 @@ export default function OrdersList() {
     fetchUserOrders();
   }, []);
 
-  function fetchfilterOrderList() {
-    if (fromDate && toDate) {
-      fetchUserOrders();
+
+
+  async function fetchFilterOrderList() {
+    if (!fromDate || !toDate) {
+      toast.warning("Please provide a valid from date.", { duration: 2000 });
+      return;
     }
+    await fetchUserOrders();
+    setFromDate("");
+    setToDate("");
   }
 
   return (
@@ -304,7 +310,7 @@ export default function OrdersList() {
             format="y-MM-dd"
           />
         </div>
-        <Button variant="contained" onClick={() => fetchfilterOrderList()}>
+        <Button variant="contained" onClick={() => fetchFilterOrderList()}>
           Apply Filter
         </Button>
       </div>
