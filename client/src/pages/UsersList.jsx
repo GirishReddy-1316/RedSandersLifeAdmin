@@ -144,6 +144,7 @@ export default function UsersList() {
         ...user,
         id: user._id,
         isGoogleSignIn: user.googleEmail ? true : false,
+        phoneNumber: user.googleEmail ? "NA" : user.phoneNumber,
         createdAt: new Date(user.createdAt),
       }));
       setRows(usersWithIds);
