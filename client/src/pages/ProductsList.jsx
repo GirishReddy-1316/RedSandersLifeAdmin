@@ -66,6 +66,12 @@ function EditToolbar({ getproductList }) {
 
   const handleSubmit = async () => {
     try {
+      const requiredFields = ['brandName', 'name', 'price', 'category', 'size', 'slug', 'desc', 'ingredients'];
+      const emptyFields = requiredFields.filter(field => !formData[field]);
+      if (emptyFields.length > 0) {
+        toast.error(`Please fill in the following fields: ${emptyFields.join(', ')}`);
+        return;
+      }
       if (!image) {
         toast.error("Please select an image.");
         return;
@@ -115,8 +121,10 @@ function EditToolbar({ getproductList }) {
       toast.success("Product added successfully", { duration: 2000 });
       setOpen(false);
     } catch (error) {
-      console.error("Error adding product:", error);
-      toast.error("Failed to add product. Please try again later.");
+      toast.error(
+        error.response ? error.response.data.message : error.message,
+        { position: "top-right" }
+      );
     }
   };
 
@@ -188,6 +196,7 @@ function EditToolbar({ getproductList }) {
             fullWidth
             margin="normal"
             sx={{ width: "calc(50% - 16px)", mr: 2 }}
+            required
           />
           <TextField
             label="Product Name"
@@ -197,6 +206,7 @@ function EditToolbar({ getproductList }) {
             fullWidth
             margin="normal"
             sx={{ width: "calc(50% - 16px)", mr: 2 }}
+            required
           />
           <TextField
             label="Price"
@@ -206,6 +216,7 @@ function EditToolbar({ getproductList }) {
             fullWidth
             margin="normal"
             sx={{ width: "calc(50% - 16px)", mr: 2 }}
+            required
           />
           <TextField
             label="Category: Powder or Bevarage"
@@ -215,6 +226,7 @@ function EditToolbar({ getproductList }) {
             fullWidth
             margin="normal"
             sx={{ width: "calc(50% - 16px)", mr: 2 }}
+            required
           />
           <TextField
             label="Size: ml or gm"
@@ -224,6 +236,7 @@ function EditToolbar({ getproductList }) {
             fullWidth
             margin="normal"
             sx={{ width: "calc(50% - 16px)", mr: 2 }}
+            required
           />
           <TextField
             label="Slug - Product end url"
@@ -233,6 +246,7 @@ function EditToolbar({ getproductList }) {
             fullWidth
             margin="normal"
             sx={{ width: "calc(50% - 16px)", mr: 2 }}
+            required
           />
           <TextField
             label="Description : Main description about product"
@@ -242,6 +256,7 @@ function EditToolbar({ getproductList }) {
             fullWidth
             margin="normal"
             sx={{ width: "calc(50% - 16px)", mr: 2 }}
+            required
           />
           <TextField
             label="Ingredients"
@@ -251,6 +266,7 @@ function EditToolbar({ getproductList }) {
             fullWidth
             margin="normal"
             sx={{ width: "calc(50% - 16px)", mr: 2 }}
+            required
           />
           {formData.additionalBulletPoints.map((bulletPoint, index) => (
             <div key={index} style={{ display: "flex", alignItems: "center" }}>
@@ -265,7 +281,7 @@ function EditToolbar({ getproductList }) {
                 style={{ marginRight: "8px" }}
               />
               <TextField
-                 label={`Description ${index + 1}`}
+                label={`Description ${index + 1}`}
                 value={bulletPoint.description}
                 onChange={(e) =>
                   handleBulletPointChange(index, "description", e.target.value)
@@ -308,6 +324,7 @@ function EditToolbar({ getproductList }) {
                     width: "100%",
                     boxSizing: "border-box",
                   }}
+                  required
                 />
               </CloudinaryContext>
             </div>
