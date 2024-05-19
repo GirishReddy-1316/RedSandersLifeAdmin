@@ -7,7 +7,7 @@ import DeleteIcon from "@mui/icons-material/DeleteOutlined";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Close";
 import { Link } from "react-router-dom";
-import { toast } from "sonner";
+import { toast } from "react-toastify";
 
 import {
   GridRowModes,
@@ -45,8 +45,13 @@ function EditToolbar(props) {
       const response = await axiosInstance.post(`/admin/users/create`, userData, axiosConfig);
       await fetchUsers();
       toast.success("User added successfully", { duration: 2000 });
+      handleCloseModal();
     } catch (error) {
-      toast.error("Failed to add user: " + error.message);
+      console.log(error);
+      toast.error(
+        error.response ? error.response.data.message : error.message,
+        { position: "top-right" }
+      );
     }
   };
 

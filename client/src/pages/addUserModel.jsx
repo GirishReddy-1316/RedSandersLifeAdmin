@@ -21,7 +21,6 @@ function AddUserModal({ open, onClose, onSave }) {
 
   const handleSave = () => {
     onSave(userData);
-    onClose();
   };
 
   return (
