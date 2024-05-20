@@ -12,6 +12,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [otp, setOtp] = useState("");
   const [isForget, setIsForget] = useState(false);
   const [isResetPassword, setIsResetPassword] = useState(false);
   const navigate = useNavigate();
@@ -20,7 +21,8 @@ const Login = () => {
     e.preventDefault();
     try {
       if (!email || !password) {
-        throw new Error("Please fill in all fields");
+        toast.error("Please fill in all fields");
+        return
       }
       const formData = { email, password };
       const response = await axiosInstance.post("/admin/login", formData);
@@ -28,9 +30,12 @@ const Login = () => {
         const { token } = response.data;
         localStorage.setItem('admin_token', JSON.stringify(token));
         toast.success("Login successful", { duration: 2000 });
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
         navigate("/dashboard");
       } else {
-        throw new Error(`Login failed with status ${response.status}`);
+        toast.error(`Login failed with status ${response.status}`);
       }
     } catch (error) {
       if (error.response) {
@@ -39,16 +44,14 @@ const Login = () => {
         toast.error(`Error: ${error.message}`);
       }
     }
-    setEmail("");
-    setPassword("");
-    setConfirmPassword("");
   };
 
   const handleSendOTP = async (e) => {
     e.preventDefault();
     try {
       if (!email) {
-        throw new Error("Please provide your email");
+        toast.error("Please provide your email");
+        return
       }
       const response = await axiosInstance.post("/admin/forget-password", { email });
       if (response.status === 200) {
@@ -56,7 +59,7 @@ const Login = () => {
         setIsResetPassword(true);
         toast.success("OTP sent successfully", { duration: 2000 });
       } else {
-        throw new Error(`Failed to send OTP: ${response.status}`);
+        toast.error(`Failed to send OTP: ${response.statusText}`);
       }
     } catch (error) {
       if (error.response) {
@@ -70,19 +73,26 @@ const Login = () => {
   const handleResetPassword = async (e) => {
     e.preventDefault();
     try {
-      const otp = e.target.otp.value;
-      const newPassword = e.target.password.value;
-      if (!otp || !newPassword) {
-        throw new Error("Please fill in all fields");
+      if (!otp || !password || !confirmPassword) {
+        toast.error("Please fill in all fields");
+        return;
       }
-      const response = await axiosInstance.post("/admin/reset-password", { email, otp, password: newPassword });
+      if (password !== confirmPassword) {
+        toast.error("Passwords do not match");
+        return;
+      }
+      const response = await axiosInstance.post("/admin/reset-password", { email, otp, password });
       if (response.status === 200) {
         toast.success("Password reset successful", { duration: 2000 });
         setIsForget(false);
         setIsResetPassword(false);
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+        setOtp("");
         navigate("/login");
       } else {
-        throw new Error(`Password reset failed: ${response.data.message}`);
+        toast.error(`Password reset failed: ${response.data.message}`);
       }
     } catch (error) {
       if (error.response) {
@@ -91,9 +101,6 @@ const Login = () => {
         toast.error(`Error: ${error.message}`);
       }
     }
-    setEmail("");
-    setPassword("");
-    setConfirmPassword("");
   };
 
   const handlePasswordChange = (e) => {
@@ -172,7 +179,12 @@ const Login = () => {
             <div className="login-center">
               <p>Reset Password</p>
               <form onSubmit={handleResetPassword}>
-                <input type="number" placeholder="otp" name="otp" />
+                <input
+                  type="number"
+                  placeholder="OTP"
+                  name="otp"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)} />
                 <div className="pass-input-div">
                   <input
                     type={showPassword ? "text" : "password"}
