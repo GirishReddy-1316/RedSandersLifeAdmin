@@ -18,7 +18,6 @@ import {
 } from "@mui/x-data-grid";
 import { axiosInstance } from "../api";
 import AddUserModal from "./addUserModel";
-import { randomId } from "@mui/x-data-grid-generator";
 
 function EditToolbar(props) {
   let { fetchUsers } = props;
@@ -42,7 +41,7 @@ function EditToolbar(props) {
       }
     };
     try {
-      const response = await axiosInstance.post(`/admin/users/create`, userData, axiosConfig);
+      await axiosInstance.post(`/admin/users/create`, userData, axiosConfig);
       await fetchUsers();
       toast.success("User added successfully", { duration: 2000 });
       handleCloseModal();
@@ -133,8 +132,6 @@ export default function UsersList() {
     }
   };
 
-
-
   const fetchUsers = async () => {
     setLoading(true);
     toast.info("Loading users...");
@@ -167,54 +164,13 @@ export default function UsersList() {
     fetchUsers();
   }, []);
 
-  const handleRowEditStop = (params, event) => {
-    if (params.reason === GridRowEditStopReasons.rowFocusOut) {
-      event.defaultMuiPrevented = true;
-    }
-  };
-
   const handleEditClick = (id) => async () => {
-    const row = rows.find(r => r.id === id);
     setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
   };
 
-  const handleSaveClick = (row) => async () => {
-    let { id } = row
-    const editedRowIndex = rows.findIndex(r => r.id === id);
-    console.log("row", rows, editedRowIndex, "edited", row)
-    if (editedRowIndex === -1) {
-      toast.error("Row not found.");
-      return;
-    }
-
-    const editedRow = rows[editedRowIndex];
-    try {
-      const axiosConfig = {
-        headers: {
-          'authorization': `Bearer ${token}`
-        }
-      };
-      const response = await axiosInstance.put(`/admin/users/${id}`, {
-        username: editedRow.username,
-        email: editedRow.email
-      }, axiosConfig);
-
-      const updatedRow = response.data;
-
-      setRows(prevRows => {
-        const newRows = [...prevRows];
-        newRows[editedRowIndex] = updatedRow;
-        return newRows;
-      });
-
-      setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
-
-      toast.success("User saved successfully", { duration: 2000 });
-    } catch (error) {
-      toast.error("Error saving user: " + error.message);
-    }
+  const handleSaveClick = (id) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
   };
-
 
   const handleDeleteClick = (id) => async () => {
     try {
@@ -257,14 +213,46 @@ export default function UsersList() {
   };
 
   const processRowUpdate = (newRow) => {
-    console.log("processRowUpdate", newRow);
     const updatedRow = { ...newRow, isNew: false };
+    updateRowData(updatedRow);
     setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
     return updatedRow;
   };
 
   const handleRowModesModelChange = (newRowModesModel) => {
     setRowModesModel(newRowModesModel);
+  };
+
+  const handleRowEditStop = (params, event) => {
+    if (params.reason === GridRowEditStopReasons.rowFocusOut) {
+      event.defaultMuiPrevented = true;
+    }
+  };
+
+  // APIs
+  const updateRowData = async (row) => {
+    const { id, username, email } = row;
+
+    try {
+      const axiosConfig = {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      };
+
+      await axiosInstance.put(
+        `/admin/users/${id}`,
+        {
+          username,
+          email,
+        },
+        axiosConfig
+      );
+
+      toast.success('User saved successfully', { duration: 2000 });
+    } catch (error) {
+      toast.error('Error saving user: ' + error.message);
+    }
   };
 
   const columns = [
@@ -310,41 +298,45 @@ export default function UsersList() {
       headerName: "Actions",
       width: 100,
       cellClassName: "actions",
-      getActions: (row) => {
-        const isInEditMode = rowModesModel[row.id]?.mode === GridRowModes.Edit;
+      getActions: ({ id }) => {
+        const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
 
         if (isInEditMode) {
           return [
             <GridActionsCellItem
+              key={1}
               icon={<SaveIcon />}
               label="Save"
               sx={{
                 color: "primary.main",
               }}
-              onClick={handleSaveClick(row)}
+              onClick={handleSaveClick(id)}
             />,
             <GridActionsCellItem
+              key={2}
               icon={<CancelIcon />}
-              label="Cancel"
-              className="textPrimary"
-              onClick={handleCancelClick(row.id)}
-              color="inherit"
+              label='Cancel'
+              className='textPrimary'
+              onClick={handleCancelClick(id)}
+              color='inherit'
             />,
           ];
         }
 
         return [
           <GridActionsCellItem
+            key={1}
             icon={<EditIcon />}
             label="Edit"
             className="textPrimary"
-            onClick={handleEditClick(row.id)}
+            onClick={handleEditClick(id)}
             color="inherit"
           />,
           <GridActionsCellItem
+            key={2}
             icon={<DeleteIcon />}
             label="Delete"
-            onClick={handleDeleteClick(row.id)}
+            onClick={handleDeleteClick(id)}
             color="inherit"
           />,
         ];
@@ -380,7 +372,8 @@ export default function UsersList() {
           editMode="row"
           rowModesModel={rowModesModel}
           onRowModesModelChange={handleRowModesModelChange}
-          onRowEditStop={(newRow, oldRow) => processRowUpdate(newRow)}
+          onRowEditStop={handleRowEditStop}
+          processRowUpdate={processRowUpdate}
           slots={{
             toolbar: (props) => (
               <EditToolbar {...props} fetchUsers={fetchUsers} fetchfilterUsers={fetchfilterUsers} />
