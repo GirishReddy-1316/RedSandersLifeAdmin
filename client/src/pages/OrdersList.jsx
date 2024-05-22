@@ -32,28 +32,17 @@ export default function OrdersList() {
       event.defaultMuiPrevented = true;
     }
   };
-
-  const handleEditClick = (id) => {
-    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
-    const row = rows.find(r => r.id === id);
-    console.log(id, row)
-  };
-
-  const handleSaveClick = async (id) => {
-    const row = rows.find(r => r.id === id);
-    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
-
+  const handleSaveClick = async (row) => {
+    const { id, orderStatus } = row;
     try {
       let axiosConfig = {
         headers: {
           'authorization': `Bearer ${token}`
         }
       };
-      console.log(row);
-      const response = await axiosInstance.post(`/order/update/${id}`, {
-        status: row.orderStatus,
+      await axiosInstance.post(`/order/update/${id}`, {
+        status: orderStatus,
       }, axiosConfig);
-      setRows(rows.map(r => (r.id === id ? { ...r, ...response.data } : r)));
     } catch (error) {
       toast.error("Error saving user: " + error.message);
     }
@@ -70,6 +59,10 @@ export default function OrdersList() {
     toast.success("Order deleted successfully", { duration: 2000 });
   };
 
+  const handleSaveView = (id) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+  };
+
   const handleCancelClick = (id) => () => {
     setRowModesModel({
       ...rowModesModel,
@@ -82,8 +75,13 @@ export default function OrdersList() {
     }
   };
 
+  const handleEditClick = (id) => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+  };
+
   const processRowUpdate = (newRow) => {
     const updatedRow = { ...newRow, isNew: false };
+    handleSaveClick(updatedRow)
     setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
     return updatedRow;
   };
@@ -187,14 +185,16 @@ export default function OrdersList() {
         if (isInEditMode) {
           return [
             <GridActionsCellItem
+              key={1}
               icon={<SaveIcon />}
               label="Save"
               sx={{
                 color: 'primary.main',
               }}
-              onClick={() => handleSaveClick(id)}
+              onClick={handleSaveView(id)}
             />,
             <GridActionsCellItem
+              key={2}
               icon={<CancelIcon />}
               label="Cancel"
               className="textPrimary"
@@ -206,6 +206,7 @@ export default function OrdersList() {
 
         return [
           <GridActionsCellItem
+            key={1}
             icon={<EditIcon />}
             label="Edit"
             className="textPrimary"
@@ -213,6 +214,7 @@ export default function OrdersList() {
             color="inherit"
           />,
           <GridActionsCellItem
+            key={2}
             icon={<DeleteIcon />}
             label="Delete"
             onClick={() => handleDeleteClick(id)}

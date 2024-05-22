@@ -367,30 +367,23 @@ export default function ProductsList() {
     setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
   };
 
-  const handleSaveClick = (id) => async () => {
-    try {
-      setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+  const handleSaveView = (id) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+  };
 
-      const editedRow = rows.find((row) => row.id === id);
-      let axiosConfig = {
+  const handleSaveClick = async (editedRow) => {
+    const { id } = editedRow;
+    try {
+      const axiosConfig = {
         headers: {
           authorization: `Bearer ${token}`,
         },
       };
-
-      let response;
-      response = await axiosInstance.post(
+      await axiosInstance.post(
         `/products/update/${id}`,
         editedRow,
         axiosConfig
       );
-      const updatedRowData = response.data;
-      setRows((prevRows) =>
-        prevRows.map((row) =>
-          row.id === updatedRowData.id ? updatedRowData : row
-        )
-      );
-
       toast.success("Product saved successfully", { duration: 2000 });
     } catch (error) {
       console.error("Error saving product:", error);
@@ -405,7 +398,7 @@ export default function ProductsList() {
         authorization: `Bearer ${token}`,
       },
     };
-    const response = await axiosInstance.delete(
+    await axiosInstance.delete(
       `/products/delete/${id}`,
       axiosConfig
     );
@@ -428,7 +421,7 @@ export default function ProductsList() {
   const handleSearch = (event) => {
     const keyword = event.target.value.toLowerCase();
     if (keyword.trim() === "") {
-      setRows(initialRows); // Reset rows to their original state
+      setRows(initialRows);
     } else {
       const filteredRows = rows.filter(
         (row) =>
@@ -441,6 +434,7 @@ export default function ProductsList() {
 
   const processRowUpdate = (newRow) => {
     const updatedRow = { ...newRow, isNew: false };
+    handleSaveClick(updatedRow)
     setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
     return updatedRow;
   };
@@ -552,14 +546,16 @@ export default function ProductsList() {
         if (isInEditMode) {
           return [
             <GridActionsCellItem
+              key={1}
               icon={<SaveIcon />}
               label="Save"
               sx={{
                 color: "primary.main",
               }}
-              onClick={handleSaveClick(id)}
+              onClick={handleSaveView(id)}
             />,
             <GridActionsCellItem
+              key={2}
               icon={<CancelIcon />}
               label="Cancel"
               className="textPrimary"
@@ -571,6 +567,7 @@ export default function ProductsList() {
 
         return [
           <GridActionsCellItem
+            key={1}
             icon={<EditIcon />}
             label="Edit"
             className="textPrimary"
@@ -578,6 +575,7 @@ export default function ProductsList() {
             color="inherit"
           />,
           <GridActionsCellItem
+            key={2}
             icon={<DeleteIcon />}
             label="Delete"
             onClick={handleDeleteClick(id)}
