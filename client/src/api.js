@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-    baseURL: `https://redsanderslifeserver.onrender.com/api`
+    baseURL: `https://api.jiyaba.com/api`
 });
 
 
