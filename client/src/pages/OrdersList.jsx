@@ -198,7 +198,7 @@ export default function OrdersList() {
               icon={<CancelIcon />}
               label="Cancel"
               className="textPrimary"
-              onClick={() => handleCancelClick(id)}
+              onClick={handleCancelClick(id)}
               color="inherit"
             />,
           ];
