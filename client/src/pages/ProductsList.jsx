@@ -95,11 +95,11 @@ function EditToolbar({ getproductList }) {
       }
 
       const imageData = await response.json();
-      const uploadedImageUrl = imageData.secure_url; // Store the uploaded image URL
+      const uploadedImageUrl = imageData.secure_url;
 
       const productData = {
         ...formData,
-        image: uploadedImageUrl, // Use the uploaded image URL
+        image: uploadedImageUrl,
       };
 
       const productResponse = await axiosInstance.post(
