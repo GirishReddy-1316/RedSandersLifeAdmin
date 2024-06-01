@@ -54,6 +54,12 @@ function EditToolbar(props) {
     }
   };
 
+  const handleClearFilter = () => {
+    setFromDate(null);
+    setToDate(null);
+    props.fetchUsers();
+  };
+
   return (
     <GridToolbarContainer>
       <Button color="primary" startIcon={<AddIcon />} onClick={handleOpenModal}>
@@ -79,9 +85,16 @@ function EditToolbar(props) {
           format="y-MM-dd"
         />
       </div>
-      <Button variant="contained" onClick={() => props.fetchfilterUsers({ fromDate, toDate })}>
-        Apply Filter
-      </Button>
+      <div
+        style={{ width: "50%", display: 'flex', justifyContent: "space-between" }}
+      >
+        <Button variant="contained" onClick={() => props.fetchfilterUsers({ fromDate, toDate })}>
+          Apply Filter
+        </Button>
+        <Button variant="contained" onClick={handleClearFilter}>
+          Clear Filter
+        </Button>
+      </div>
       <AddUserModal
         open={isModalOpen}
         onClose={handleCloseModal}

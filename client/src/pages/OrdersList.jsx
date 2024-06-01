@@ -285,6 +285,12 @@ export default function OrdersList() {
     setToDate("");
   }
 
+  const handleClearFilter = () => {
+    setFromDate("");
+    setToDate("");
+    fetchUserOrders();
+  };
+
   return (
     <div>
       <h1>Orders List</h1>
@@ -312,10 +318,17 @@ export default function OrdersList() {
             format="y-MM-dd"
           />
         </div>
-        <Button variant="contained" onClick={() => fetchFilterOrderList()}>
-          Apply Filter
-        </Button>
-      </div>
+        <div
+          style={{ width: "50%", display: 'flex', justifyContent: "space-between" }}
+        >
+          < Button variant="contained" onClick={() => fetchFilterOrderList()}>
+            Apply Filter
+          </Button>
+          <Button variant="contained" onClick={handleClearFilter}>
+            Clear Filter
+          </Button>
+        </div>
+      </div >
       <Box
         sx={{
           height: 500,
@@ -341,6 +354,6 @@ export default function OrdersList() {
           }}
         />
       </Box>
-    </div>
+    </div >
   );
 }
