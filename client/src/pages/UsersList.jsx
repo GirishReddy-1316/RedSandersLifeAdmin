@@ -114,10 +114,26 @@ export default function UsersList() {
 
 
   const fetchfilterUsers = async (params) => {
-    if (!params.fromDate && !params.from) {
+
+    const currentDate = new Date();
+    const selectedFromDate = new Date(params.fromDate);
+    const selectedToDate = new Date(params.toDate);
+
+    if (selectedFromDate > currentDate || selectedToDate > currentDate) {
+      toast.warning("Future dates cannot be searched.", { duration: 2000 });
+      return;
+    }
+
+    if (selectedFromDate > selectedToDate) {
+      toast.warning("From date cannot be greater than To date.", { duration: 2000 });
+      return;
+    }
+
+    if (!params.fromDate && !params.toDate) {
       toast.warning("Please provide a valid from date.", { duration: 2000 });
       return;
     }
+
     setLoading(true);
     toast.info("Loading users...");
     try {

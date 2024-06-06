@@ -276,13 +276,29 @@ export default function OrdersList() {
 
 
   async function fetchFilterOrderList() {
-    if (!fromDate || !toDate) {
-      toast.warning("Please provide a valid from date.", { duration: 2000 });
+    const currentDate = new Date();
+    const selectedFromDate = new Date(fromDate);
+    const selectedToDate = new Date(toDate);
+
+    if (selectedFromDate > currentDate || selectedToDate > currentDate) {
+      toast.warning("Future dates cannot be searched.", { duration: 2000 });
       return;
     }
+
+    if (selectedFromDate > selectedToDate) {
+      toast.warning("From date cannot be greater than To date.", { duration: 2000 });
+      return;
+    }
+
+    if (!fromDate || !toDate) {
+      toast.warning("Please provide a valid from date and to date.", { duration: 2000 });
+      return;
+    }
+
     await fetchUserOrders();
     setFromDate("");
     setToDate("");
+
   }
 
   const handleClearFilter = () => {
