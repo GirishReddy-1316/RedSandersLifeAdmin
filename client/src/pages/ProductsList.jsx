@@ -12,6 +12,8 @@ import Modal from "@mui/material/Modal";
 import TextField from "@mui/material/TextField";
 import { axiosInstance } from "../api";
 import { toast } from "react-toastify";
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 import {
   GridRowModes,
@@ -23,7 +25,7 @@ import {
 import { randomId } from "@mui/x-data-grid-generator";
 import { IconButton } from "@mui/material";
 
-function EditToolbar({ getproductList }) {
+function EditToolbar({ getproductList, rows }) {
   const [image, setImage] = React.useState(null);
   const [open, setOpen] = React.useState(false);
   const [token, setToken] = React.useState(
@@ -160,10 +162,22 @@ function EditToolbar({ getproductList }) {
     });
   };
 
+  const exportData = () => {
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Products');
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+    saveAs(data, `products_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
   return (
     <GridToolbarContainer>
       <Button color="primary" startIcon={<AddIcon />} onClick={handleOpen}>
         Add Product
+      </Button>
+      <Button variant="contained" onClick={exportData}>
+        Export Data
       </Button>
 
       <Modal
@@ -649,7 +663,7 @@ export default function ProductsList() {
           processRowUpdate={processRowUpdate}
           slots={{
             toolbar: (props) => (
-              <EditToolbar {...props} getproductList={getproductList} />
+              <EditToolbar {...props} getproductList={getproductList} rows={rows} />
             ),
           }}
           slotProps={{
