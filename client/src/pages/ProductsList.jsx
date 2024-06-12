@@ -84,7 +84,7 @@ function EditToolbar({ getproductList, rows }) {
       formDataToSend.append("upload_preset", "ml_default");
 
       const response = await fetch(
-        "https://api.cloudinary.com/v1_1/dxhoawdbh/image/upload",
+        "https://api.cloudinary.com/v1_1//image/upload",
         {
           method: "POST",
           body: formDataToSend,
