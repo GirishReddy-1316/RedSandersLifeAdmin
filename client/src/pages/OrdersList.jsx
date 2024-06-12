@@ -5,7 +5,6 @@ import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Close';
 import { Link } from "react-router-dom";
-
 import {
   GridRowModes,
   DataGrid,
@@ -17,6 +16,8 @@ import { toast } from 'react-toastify';
 import { useEffect } from 'react';
 import { axiosInstance } from '../api';
 import { Button } from '@mui/material';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 const orderStatus = ['Placed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled'];
 
@@ -32,6 +33,7 @@ export default function OrdersList() {
       event.defaultMuiPrevented = true;
     }
   };
+
   const handleSaveClick = async (row) => {
     const { id, orderStatus } = row;
     try {
@@ -81,7 +83,7 @@ export default function OrdersList() {
 
   const processRowUpdate = (newRow) => {
     const updatedRow = { ...newRow, isNew: false };
-    handleSaveClick(updatedRow)
+    handleSaveClick(updatedRow);
     setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
     return updatedRow;
   };
@@ -268,12 +270,9 @@ export default function OrdersList() {
     }
   };
 
-
   useEffect(() => {
     fetchUserOrders();
   }, []);
-
-
 
   async function fetchFilterOrderList() {
     const currentDate = new Date();
@@ -298,13 +297,21 @@ export default function OrdersList() {
     await fetchUserOrders();
     setFromDate("");
     setToDate("");
-
   }
 
   const handleClearFilter = () => {
     setFromDate("");
     setToDate("");
     fetchUserOrders();
+  };
+
+  const exportData = () => {
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders');
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+    saveAs(data, `orders_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
   return (
@@ -337,14 +344,17 @@ export default function OrdersList() {
         <div
           style={{ width: "50%", display: 'flex', justifyContent: "space-between" }}
         >
-          < Button variant="contained" onClick={() => fetchFilterOrderList()}>
+          <Button variant="contained" onClick={() => fetchFilterOrderList()}>
             Apply Filter
           </Button>
           <Button variant="contained" onClick={handleClearFilter}>
             Clear Filter
           </Button>
+          <Button variant="contained" onClick={exportData}>
+            Export Data
+          </Button>
         </div>
-      </div >
+      </div>
       <Box
         sx={{
           height: 500,
@@ -370,6 +380,6 @@ export default function OrdersList() {
           }}
         />
       </Box>
-    </div >
+    </div>
   );
 }

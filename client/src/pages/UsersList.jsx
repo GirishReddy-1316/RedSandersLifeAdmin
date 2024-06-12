@@ -8,6 +8,8 @@ import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Close";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import * as XLSX from 'xlsx';
+import * as FileSaver from 'file-saver';
 
 import {
   GridRowModes,
@@ -60,6 +62,17 @@ function EditToolbar(props) {
     props.fetchUsers();
   };
 
+  const exportData = () => {
+    const fileType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
+    const fileExtension = '.xlsx';
+    const fileName = 'users';
+    const ws = XLSX.utils.json_to_sheet(props.rows);
+    const wb = { Sheets: { 'data': ws }, SheetNames: ['data'] };
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const data = new Blob([excelBuffer], { type: fileType });
+    FileSaver.saveAs(data, fileName + fileExtension);
+  };
+
   return (
     <GridToolbarContainer>
       <Button color="primary" startIcon={<AddIcon />} onClick={handleOpenModal}>
@@ -94,6 +107,9 @@ function EditToolbar(props) {
         <Button variant="contained" onClick={handleClearFilter}>
           Clear Filter
         </Button>
+        <Button variant="contained" onClick={exportData}>
+          Export Data
+        </Button>
       </div>
       <AddUserModal
         open={isModalOpen}
@@ -112,9 +128,7 @@ export default function UsersList() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-
   const fetchfilterUsers = async (params) => {
-
     const currentDate = new Date();
     const selectedFromDate = new Date(params.fromDate);
     const selectedToDate = new Date(params.toDate);
@@ -405,7 +419,7 @@ export default function UsersList() {
           processRowUpdate={processRowUpdate}
           slots={{
             toolbar: (props) => (
-              <EditToolbar {...props} fetchUsers={fetchUsers} fetchfilterUsers={fetchfilterUsers} />
+              <EditToolbar {...props} fetchUsers={fetchUsers} fetchfilterUsers={fetchfilterUsers} rows={rows} />
             ),
           }}
           slotProps={{
