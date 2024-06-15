@@ -149,7 +149,6 @@ export default function UsersList() {
     }
 
     setLoading(true);
-    toast.info("Loading users...");
     try {
       const axiosConfig = {
         headers: {
@@ -177,7 +176,6 @@ export default function UsersList() {
 
   const fetchUsers = async () => {
     setLoading(true);
-    toast.info("Loading users...");
     try {
       const axiosConfig = {
         headers: {
@@ -195,7 +193,6 @@ export default function UsersList() {
       setRows(usersWithIds);
       setInitialRows(usersWithIds);
       setLoading(false);
-      toast.success("Users loaded successfully", { duration: 2000 });
     } catch (error) {
       setError(error.message);
       setLoading(false);
@@ -203,9 +200,6 @@ export default function UsersList() {
     }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
 
   const handleEditClick = (id) => async () => {
     setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
@@ -224,7 +218,7 @@ export default function UsersList() {
       };
       await axiosInstance.delete(`/admin/users/${id}`, axiosConfig);
       setRows(rows.filter(row => row.id !== id));
-      toast.success("User deleted successfully", { duration: 2000 });
+      toast.success("User deleted successfully");
     } catch (error) {
       toast.error("Error deleting user: " + error.message);
     }
@@ -292,7 +286,7 @@ export default function UsersList() {
         axiosConfig
       );
 
-      toast.success('User saved successfully', { duration: 2000 });
+      toast.success('User saved successfully');
     } catch (error) {
       toast.error('Error saving user: ' + error.message);
     }
@@ -386,6 +380,10 @@ export default function UsersList() {
       },
     },
   ];
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   return (
     <div>
