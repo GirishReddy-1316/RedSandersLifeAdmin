@@ -25,12 +25,61 @@ import {
 import { randomId } from "@mui/x-data-grid-generator";
 import { IconButton } from "@mui/material";
 
-function EditToolbar({ getproductList, rows }) {
-  const [image, setImage] = React.useState(null);
-  const [open, setOpen] = React.useState(false);
+function EditToolbar({ getproductList, setFormData, setImage, setOpen, setIsEditMode, initialRows, rows }) {
+  const handleOpen = () => {
+    setFormData({
+      brandName: "",
+      image: "",
+      name: "",
+      price: "",
+      category: "",
+      size: "",
+      featured: true,
+      slug: "",
+      desc: "",
+      additionalBulletPoints: [{ heading: "", description: "" }],
+      isProductReady: true,
+      ingredients: "",
+    });
+    setImage(null);
+    setIsEditMode(false);
+    setOpen(true);
+  };
+
+  const exportData = () => {
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Products');
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
+    saveAs(data, `products_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
+  return (
+    <GridToolbarContainer>
+      <Button color="primary" startIcon={<AddIcon />} onClick={handleOpen}>
+        Add Product
+      </Button>
+      <Button variant="contained" onClick={exportData}>
+        Export Data
+      </Button>
+    </GridToolbarContainer>
+  );
+}
+
+export default function ProductsList() {
+  const [rows, setRows] = React.useState([]);
+  const [rowModesModel, setRowModesModel] = React.useState({});
+  const [initialRows, setinitialRows] = React.useState([]);
   const [token, setToken] = React.useState(
     JSON.parse(localStorage.getItem("admin_token")) || ""
   );
+  const [imagePreviewUrl, setImagePreviewUrl] = React.useState("");
+
+  const [image, setImage] = React.useState(null);
+  const [open, setOpen] = React.useState(false);
+  const [isEditMode, setIsEditMode] = React.useState(false);
+  const [editRowId, setEditRowId] = React.useState(null);
   const [formData, setFormData] = React.useState({
     brandName: "",
     image: "",
@@ -46,14 +95,6 @@ function EditToolbar({ getproductList, rows }) {
     ingredients: "",
   });
 
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -61,66 +102,73 @@ function EditToolbar({ getproductList, rows }) {
     });
   };
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    setImage(selectedFile);
-  };
-
   const handleSubmit = async () => {
     try {
-      const requiredFields = ['brandName', 'name', 'price', 'category', 'size', 'slug', 'desc', 'ingredients'];
-      const emptyFields = requiredFields.filter(field => !formData[field]);
-      if (emptyFields.length > 0) {
-        toast.error(`Please fill in the following fields: ${emptyFields.join(', ')}`);
-        return;
-      }
-      if (!image) {
-        toast.error("Please select an image.");
-        return;
-      }
-
       const formDataToSend = new FormData();
-      formDataToSend.append("file", image);
-      formDataToSend.append("upload_preset", "ml_default");
+      if (image) {
+        formDataToSend.append("file", image);
+        formDataToSend.append("upload_preset", "exjqodc2");
 
-      const response = await fetch(
-        "https://api.cloudinary.com/v1_1//image/upload",
-        {
-          method: "POST",
-          body: formDataToSend,
+        const response = await fetch(
+          "https://api.cloudinary.com/v1_1/dg5dkcpkn/image/upload",
+          {
+            method: "POST",
+            body: formDataToSend,
+          }
+        );
+
+        if (!response.ok) {
+          toast.error("Failed to upload image.");
+          return;
         }
-      );
 
-      if (!response.ok) {
-        toast.error("Failed to upload image.");
-        return;
+        const imageData = await response.json();
+        const uploadedImageUrl = imageData.secure_url;
+
+        formData.image = uploadedImageUrl;
       }
-
-      const imageData = await response.json();
-      const uploadedImageUrl = imageData.secure_url;
 
       const productData = {
         ...formData,
-        image: uploadedImageUrl,
       };
 
-      const productResponse = await axiosInstance.post(
-        `/products/insert`,
-        productData,
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      if (isEditMode) {
+        const productResponse = await axiosInstance.post(
+          `/products/update/${editRowId}`,
+          productData,
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-      if (productResponse.status !== 201) {
-        toast.error("Failed to add product.");
-        return;
+        if (productResponse.status !== 200) {
+          toast.error("Failed to update product.");
+          return;
+        }
+
+        toast.success("Product updated successfully", { duration: 2000 });
+      } else {
+        const productResponse = await axiosInstance.post(
+          `/products/insert`,
+          productData,
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (productResponse.status !== 201) {
+          toast.error("Failed to add product.");
+          return;
+        }
+
+        toast.success("Product added successfully", { duration: 2000 });
       }
 
       await getproductList();
-      toast.success("Product added successfully", { duration: 2000 });
       setOpen(false);
     } catch (error) {
       toast.error(
@@ -162,215 +210,6 @@ function EditToolbar({ getproductList, rows }) {
     });
   };
 
-  const exportData = () => {
-    const worksheet = XLSX.utils.json_to_sheet(rows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Products');
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
-    saveAs(data, `products_${new Date().toISOString().split('T')[0]}.xlsx`);
-  };
-
-  return (
-    <GridToolbarContainer>
-      <Button color="primary" startIcon={<AddIcon />} onClick={handleOpen}>
-        Add Product
-      </Button>
-      <Button variant="contained" onClick={exportData}>
-        Export Data
-      </Button>
-
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="modal-title"
-        aria-describedby="modal-description"
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 800,
-            bgcolor: "background.paper",
-            border: "2px solid #000",
-            boxShadow: 24,
-            p: 4,
-            maxHeight: 500,
-            overflowY: "auto",
-          }}
-        >
-          <h2 id="modal-title">Add New Product</h2>
-          <TextField
-            label="Brand Name : you can give Jiyaba for now"
-            name="brandName"
-            value={formData.brandName}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            sx={{ width: "calc(50% - 16px)", mr: 2 }}
-            required
-          />
-          <TextField
-            label="Product Name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            sx={{ width: "calc(50% - 16px)", mr: 2 }}
-            required
-          />
-          <TextField
-            label="Price"
-            name="price"
-            value={formData.price}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            sx={{ width: "calc(50% - 16px)", mr: 2 }}
-            required
-          />
-          <TextField
-            label="Category: Powder or Bevarage"
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            sx={{ width: "calc(50% - 16px)", mr: 2 }}
-            required
-          />
-          <TextField
-            label="Size: ml or gm"
-            name="size"
-            value={formData.size}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            sx={{ width: "calc(50% - 16px)", mr: 2 }}
-            required
-          />
-          <TextField
-            label="Slug - Product end url"
-            name="slug"
-            value={formData.slug}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            sx={{ width: "calc(50% - 16px)", mr: 2 }}
-            required
-          />
-          <TextField
-            label="Description : Main description about product"
-            name="desc"
-            value={formData.desc}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            sx={{ width: "calc(50% - 16px)", mr: 2 }}
-            required
-          />
-          <TextField
-            label="Ingredients"
-            name="ingredients"
-            value={formData.ingredients}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            sx={{ width: "calc(50% - 16px)", mr: 2 }}
-            required
-          />
-          {formData.additionalBulletPoints.map((bulletPoint, index) => (
-            <div key={index} style={{ display: "flex", alignItems: "center" }}>
-              <TextField
-                label={`Heading ${index + 1}`}
-                value={bulletPoint.heading}
-                onChange={(e) =>
-                  handleBulletPointChange(index, "heading", e.target.value)
-                }
-                fullWidth
-                margin="normal"
-                style={{ marginRight: "8px" }}
-              />
-              <TextField
-                label={`Description ${index + 1}`}
-                value={bulletPoint.description}
-                onChange={(e) =>
-                  handleBulletPointChange(index, "description", e.target.value)
-                }
-                fullWidth
-                margin="normal"
-                style={{ marginRight: "8px" }}
-              />
-              <IconButton
-                onClick={() => handleRemoveBulletPoint(index)}
-                aria-label="delete"
-              >
-                <DeleteIcon />
-              </IconButton>
-            </div>
-          ))}
-          <Button onClick={handleAddBulletPoint} startIcon={<AddIcon />}>
-            Add headings
-          </Button>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginTop: "10px",
-            }}
-          >
-            <div>Upload product image here :</div>
-            <div>
-              <CloudinaryContext cloudName="ml_default">
-                <input
-                  type="file"
-                  onChange={handleFileChange}
-                  style={{
-                    border: "2px solid #ccc",
-                    borderRadius: "4px",
-                    padding: "8px 12px",
-                    fontSize: "16px",
-                    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-                    transition: "border-color 0.3s ease",
-                    width: "100%",
-                    boxSizing: "border-box",
-                  }}
-                  required
-                />
-              </CloudinaryContext>
-            </div>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginTop: "10px",
-            }}
-          >
-            <Button variant="contained" onClick={handleSubmit}>
-              Save
-            </Button>
-            <Button variant="contained" onClick={handleClose}>
-              Cancel
-            </Button>
-          </div>
-        </Box>
-      </Modal>
-    </GridToolbarContainer>
-  );
-}
-
-export default function ProductsList() {
-  const [rows, setRows] = React.useState([]);
-  const [rowModesModel, setRowModesModel] = React.useState({});
-  const [initialRows, setinitialRows] = React.useState([]);
-  const [token, setToken] = React.useState(
-    JSON.parse(localStorage.getItem("admin_token")) || ""
-  );
-
   const handleRowEditStop = (params, event) => {
     if (params.reason === GridRowEditStopReasons.rowFocusOut) {
       event.defaultMuiPrevented = true;
@@ -378,7 +217,12 @@ export default function ProductsList() {
   };
 
   const handleEditClick = (id) => () => {
-    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+    const selectedRow = rows.find((row) => row.id === id);
+    setFormData(selectedRow);
+    setImage(null);
+    setIsEditMode(true);
+    setEditRowId(id);
+    setOpen(true);
   };
 
   const handleSaveView = (id) => () => {
@@ -407,6 +251,7 @@ export default function ProductsList() {
   };
 
   const handleDeleteClick = (id) => async () => {
+    alert("Are you sure you want to delete this product?");
     let axiosConfig = {
       headers: {
         authorization: `Bearer ${token}`,
@@ -446,130 +291,35 @@ export default function ProductsList() {
     }
   };
 
-  const processRowUpdate = (newRow) => {
-    const updatedRow = { ...newRow, isNew: false };
-    handleSaveClick(updatedRow)
-    setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
-    return updatedRow;
-  };
-
-  const handleRowModesModelChange = (newRowModesModel) => {
-    setRowModesModel(newRowModesModel);
-  };
-
   const columns = [
-    {
-      field: "id",
-      headerName: "Product Id",
-      type: "number",
-      width: 180,
-      align: "left",
-      headerAlign: "left",
-      editable: true,
-    },
-    {
-      field: "brandName",
-      headerName: "Brand Name",
-      type: "string",
-      width: 180,
-      align: "left",
-      headerAlign: "left",
-      editable: true,
-    },
-    {
-      field: "image",
-      headerName: "Image Name",
-      type: "string",
-      width: 180,
-      align: "left",
-      headerAlign: "left",
-      editable: true,
-    },
-    {
-      field: "name",
-      headerName: "Product Name",
-      type: "string",
-      width: 180,
-      align: "left",
-      headerAlign: "left",
-      editable: true,
-    },
-    {
-      field: "price",
-      headerName: "Price",
-      type: "string",
-      width: 180,
-      align: "left",
-      headerAlign: "left",
-      editable: true,
-    },
-    {
-      field: "category",
-      headerName: "Category",
-      type: "string",
-      width: 180,
-      align: "left",
-      headerAlign: "left",
-      editable: true,
-    },
-    {
-      field: "size",
-      headerName: "Size",
-      type: "string",
-      width: 180,
-      align: "left",
-      headerAlign: "left",
-      editable: true,
-    },
-    {
-      field: "featured",
-      headerName: "Featured Product",
-      type: "string",
-      width: 180,
-      align: "left",
-      headerAlign: "left",
-      editable: true,
-    },
-    {
-      field: "slug",
-      headerName: "Product URL",
-      type: "string",
-      width: 180,
-      align: "left",
-      headerAlign: "left",
-      editable: true,
-    },
-    {
-      field: "desc",
-      headerName: "Description",
-      type: "string",
-      width: 180,
-      align: "left",
-      headerAlign: "left",
-      editable: true,
-    },
+    { field: "id", headerName: "ID", width: 90 },
+    { field: "brandName", headerName: "Brand", width: 150, editable: true },
+    { field: "image", headerName: "Image", width: 150, editable: true },
+    { field: "name", headerName: "Name", width: 150, editable: true },
+    { field: "price", headerName: "Price", width: 150, editable: true },
+    { field: "category", headerName: "Category", width: 150, editable: true },
+    { field: "size", headerName: "Size", width: 150, editable: true },
+    { field: "featured", headerName: "Featured", width: 150, editable: true },
+    { field: "slug", headerName: "Slug", width: 150, editable: true },
+    { field: "desc", headerName: "Description", width: 150, editable: true },
+    // { field: "additionalBulletPoints", headerName: "Additional Bullet Points", width: 200, editable: true },
+    { field: "isProductReady", headerName: "Product Ready", width: 150, editable: true },
+    { field: "ingredients", headerName: "Ingredients", width: 150, editable: true },
     {
       field: "actions",
-      type: "actions",
       headerName: "Actions",
       width: 100,
-      cellClassName: "actions",
+      type: "actions",
       getActions: ({ id }) => {
         const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
-
         if (isInEditMode) {
           return [
             <GridActionsCellItem
-              key={1}
               icon={<SaveIcon />}
               label="Save"
-              sx={{
-                color: "primary.main",
-              }}
               onClick={handleSaveView(id)}
             />,
             <GridActionsCellItem
-              key={2}
               icon={<CancelIcon />}
               label="Cancel"
               className="textPrimary"
@@ -578,10 +328,8 @@ export default function ProductsList() {
             />,
           ];
         }
-
         return [
           <GridActionsCellItem
-            key={1}
             icon={<EditIcon />}
             label="Edit"
             className="textPrimary"
@@ -589,7 +337,6 @@ export default function ProductsList() {
             color="inherit"
           />,
           <GridActionsCellItem
-            key={2}
             icon={<DeleteIcon />}
             label="Delete"
             onClick={handleDeleteClick(id)}
@@ -600,31 +347,35 @@ export default function ProductsList() {
     },
   ];
 
+  const getproductList = async () => {
+    try {
+      let response = await axiosInstance.get("/products");
+      const productsWithId = response.data.map((product) => ({
+        ...product,
+        id: product._id,
+      }));
+      setRows(productsWithId);
+      setinitialRows(productsWithId);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
+
   React.useEffect(() => {
     getproductList();
   }, []);
 
-  const getproductList = async () => {
-    try {
-      const response = await axiosInstance.get(`/products`, {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      });
-      const products = response.data.map((product, index) => ({
-        ...product,
-        id: product._id,
-      }));
-      setRows(products);
-      setinitialRows(products);
-    } catch (error) {
-      console.log("Error fetching orders:", error);
-      toast.error(
-        error.response ? error.response.data.message : error.message,
-        { duration: 2000, position: "top-center" }
-      );
-    }
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    setImage(selectedFile);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreviewUrl(reader.result);
+    };
+    reader.readAsDataURL(selectedFile);
   };
+
 
   return (
     <div>
@@ -658,18 +409,144 @@ export default function ProductsList() {
           columns={columns}
           editMode="row"
           rowModesModel={rowModesModel}
-          onRowModesModelChange={handleRowModesModelChange}
           onRowEditStop={handleRowEditStop}
-          processRowUpdate={processRowUpdate}
-          slots={{
-            toolbar: (props) => (
-              <EditToolbar {...props} getproductList={getproductList} rows={rows} />
-            ),
+          components={{
+            Toolbar: EditToolbar,
           }}
-          slotProps={{
-            toolbar: { setRows, setRowModesModel },
+          componentsProps={{
+            toolbar: { getproductList, setFormData, setImage, setOpen, setIsEditMode, rows, initialRows },
           }}
         />
+        <Modal open={open} onClose={() => setOpen(false)}>
+          <Box
+            component="form"
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 800,
+              bgcolor: "background.paper",
+              border: "2px solid #000",
+              boxShadow: 24,
+              p: 4,
+              maxHeight: 500,
+              overflowY: "auto",
+            }}
+          >
+            <TextField
+              name="brandName"
+              label="Brand Name"
+              value={formData.brandName}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              name="name"
+              label="Name"
+              value={formData.name}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              name="price"
+              label="Price"
+              value={formData.price}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              name="category"
+              label="Category"
+              value={formData.category}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              name="size"
+              label="Size"
+              value={formData.size}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              name="slug"
+              label="Slug"
+              value={formData.slug}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              name="desc"
+              label="Description"
+              value={formData.desc}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              name="ingredients"
+              label="Ingredients"
+              value={formData.ingredients}
+              onChange={handleChange}
+              sx={{ mb: 2 }}
+            />
+            {formData.additionalBulletPoints.map((bulletPoint, index) => (
+              <Box key={index} sx={{ display: 'flex', flexDirection: 'column', mb: 2 }}>
+                <TextField
+                  label="Bullet Point Heading"
+                  value={bulletPoint.heading}
+                  onChange={(e) => handleBulletPointChange(index, "heading", e.target.value)}
+                  sx={{ mb: 1 }}
+                />
+                <TextField
+                  label="Bullet Point Description"
+                  value={bulletPoint.description}
+                  onChange={(e) => handleBulletPointChange(index, "description", e.target.value)}
+                  sx={{ mb: 1 }}
+                />
+                <Button variant="outlined" color="error" onClick={() => handleRemoveBulletPoint(index)}>Remove Bullet Point</Button>
+              </Box>
+            ))}
+            <Button variant="outlined" onClick={handleAddBulletPoint}>Add Bullet Point</Button>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginTop: "10px",
+              }}
+            >
+              <div>Upload product image here :</div>
+              <div>
+                <CloudinaryContext cloudName="ml_default">
+                  <input
+                    type="file"
+                    onChange={handleFileChange}
+                    style={{
+                      border: "2px solid #ccc",
+                      borderRadius: "4px",
+                      padding: "8px 12px",
+                      fontSize: "16px",
+                      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+                      transition: "border-color 0.3s ease",
+                      width: "100%",
+                      boxSizing: "border-box",
+                    }}
+                    required
+                  />
+                </CloudinaryContext>
+              </div>
+            </div>
+            {imagePreviewUrl && (
+              <div style={{ marginTop: "10px", textAlign: "center" }}>
+                <img src={imagePreviewUrl} alt="Product Preview" style={{ maxWidth: "100%", maxHeight: "200px" }} />
+              </div>
+            )}
+            <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ mt: 2 }}>
+              {isEditMode ? "Update Product" : "Add Product"}
+            </Button>
+          </Box>
+        </Modal>
       </Box>
     </div>
   );
