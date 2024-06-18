@@ -25,7 +25,7 @@ import {
 import { randomId } from "@mui/x-data-grid-generator";
 import { IconButton } from "@mui/material";
 
-function EditToolbar({ getproductList, setFormData, setImage, setOpen, setIsEditMode, initialRows, rows }) {
+function EditToolbar({ getproductList, setFormData, setImage, setOpen, setIsEditMode, initialRows, rows, setImagePreviewUrl }) {
   const handleOpen = () => {
     setFormData({
       brandName: "",
@@ -41,6 +41,7 @@ function EditToolbar({ getproductList, setFormData, setImage, setOpen, setIsEdit
       isProductReady: true,
       ingredients: "",
     });
+    setImagePreviewUrl("");
     setImage(null);
     setIsEditMode(false);
     setOpen(true);
@@ -105,8 +106,8 @@ export default function ProductsList() {
   const handleSubmit = async () => {
     try {
       const formDataToSend = new FormData();
-      if (image) {
-        formDataToSend.append("file", image);
+      if (image || imagePreviewUrl) {
+        formDataToSend.append("file", image || imagePreviewUrl);
         formDataToSend.append("upload_preset", "exjqodc2");
 
         const response = await fetch(
@@ -218,6 +219,7 @@ export default function ProductsList() {
 
   const handleEditClick = (id) => () => {
     const selectedRow = rows.find((row) => row.id === id);
+    setImagePreviewUrl(selectedRow.image);
     setFormData(selectedRow);
     setImage(null);
     setIsEditMode(true);
@@ -414,7 +416,7 @@ export default function ProductsList() {
             Toolbar: EditToolbar,
           }}
           componentsProps={{
-            toolbar: { getproductList, setFormData, setImage, setOpen, setIsEditMode, rows, initialRows },
+            toolbar: { getproductList, setFormData, setImage, setOpen, setIsEditMode, rows, initialRows, setImage, setImagePreviewUrl },
           }}
         />
         <Modal open={open} onClose={() => setOpen(false)}>
